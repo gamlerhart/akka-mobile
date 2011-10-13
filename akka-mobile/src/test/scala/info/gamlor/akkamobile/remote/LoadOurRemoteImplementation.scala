@@ -19,6 +19,5 @@ class LoadOurRemoteImplementation  extends Spec {
 
       remote should not be (null)
     }
-
   }
 }

@@ -58,8 +58,6 @@ class ClientRemote extends RemoteSupport with RemoteClientModule{
 
   def optimizeLocalScoped_?() = notImplemented
 
-
-
   def registerSupervisorForActor(actorRef: ActorRef): ActorRef= notImplemented
 
   def deregisterSupervisorForActor(actorRef: ActorRef): ActorRef = notImplemented
