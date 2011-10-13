@@ -1,4 +1,4 @@
-package info.gamlor.mobileakka.remote
+package info.gamlor.akkamobile.remote
 
 import org.scalatest.Spec
 import akka.actor.{Actor, Actors}

@@ -1,0 +1,9 @@
+.idea
+.idea_modules
+target
+**.iml
+
+PlayGroundApp/bin/
+PlayGroundApp/gen/
+PlayGroundApp/out/
+PlayGroundApp/local.properties

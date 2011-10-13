@@ -1,4 +1,4 @@
-package info.gamlor.mobileakka
+package info.gamlor.akkamobile
 
 import akka.actor.{Actor, PoisonPill}
 
