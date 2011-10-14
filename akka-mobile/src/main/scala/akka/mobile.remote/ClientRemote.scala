@@ -1,16 +1,20 @@
-package akka.mobile
+package akka.mobile.remote
 
 import akka.dispatch.CompletableFuture
 import akka.remoteinterface.{RemoteClientModule, RemoteSupport}
 import akka.actor._
 import java.net.{InetAddress, InetSocketAddress}
+import akka.remote.protocol.RemoteProtocol.AkkaRemoteProtocol
 
 /**
  * @author roman.stoffel@gamlor.info
  * @since 13.10.11
  */
 
-class ClientRemote extends RemoteSupport with RemoteClientModule{
+class ClientRemote(messaging : RemoteMessaging) extends RemoteSupport with RemoteClientModule{
+
+  def this() = this(RemoteMessaging())
+
   def registerTypedActor(id: String, typedActor: AnyRef) {}
 
   def isRunning = notImplemented
@@ -53,7 +57,7 @@ class ClientRemote extends RemoteSupport with RemoteClientModule{
   def typedActorFor[T](intfClass: Class[T], serviceId: String, implClassName: String, timeout: Long, host: String, port: Int, loader: Option[ClassLoader]) = notImplemented
 
   def actorFor(serviceId: String, className: String, timeout: Long, hostname: String, port: Int, loader: Option[ClassLoader]) = {
-    ClientRemoteActorRef(new InetSocketAddress(hostname,port)).start()
+    ClientRemoteActorRef(new InetSocketAddress(hostname,port),serviceId).start()
   }
 
   def send[T](message: Any,
@@ -65,7 +69,10 @@ class ClientRemote extends RemoteSupport with RemoteClientModule{
               actorRef: ActorRef,
               typedActorInfo: Option[(String, String)],
               actorType: ActorType,
-              loader: Option[ClassLoader]) = notImplemented
+              loader: Option[ClassLoader]):Option[CompletableFuture[T]] = {
+    messaging.channelFor(remoteAddress).send(Serialisation.oneWayMessageToActor(actorRef.uuid,actorRef.id));
+    None
+  }
 
   def optimizeLocalScoped_?() = notImplemented
 

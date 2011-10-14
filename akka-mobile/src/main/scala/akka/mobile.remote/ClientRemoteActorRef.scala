@@ -1,4 +1,4 @@
-package akka.mobile
+package akka.mobile.remote
 
 import java.util.Map
 import akka.actor._
@@ -11,8 +11,9 @@ import java.net.InetSocketAddress
  * @since 13.10.11
  */
 
-case class ClientRemoteActorRef(address : InetSocketAddress) extends ActorRef with ScalaActorRef {
+case class ClientRemoteActorRef(address : InetSocketAddress, serviceId : String) extends ActorRef with ScalaActorRef {
 
+  id = serviceId
 
   @scala.deprecated("Remoting will become fully transparent in the future")
   def homeAddress = Some(address)

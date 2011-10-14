@@ -13,21 +13,20 @@ import TestServer._
 
 class EchoActorSpec extends WordSpec with MustMatchers with TestKit {
 
-  withRunningServer(ctx => {
-    ctx.register("echo",Actor.actorOf[EchoActor]);
 
-    "The Actor must " must {
+  "The Actor must " must {
 
-      "send back a Hello " in {
-        val echo = Actor.remote.actorFor("echo","localhost",ctx.port);
+    "send back a Hello " in {
+
+      withRunningServer(ctx => {
+        ctx.register("echo", Actor.actorOf[EchoActor]);
+        val echo = Actor.remote.actorFor("echo", "localhost", ctx.port);
         echo ! "Hello"
         expectMsg("Hello")
-      }
-
+      })
     }
 
-  })
-
+  }
 
 }
 

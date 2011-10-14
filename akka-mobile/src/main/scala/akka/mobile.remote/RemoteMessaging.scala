@@ -27,9 +27,19 @@ object RemoteMessaging {
 case class RemoteMessageChannel(address: InetSocketAddress, socketFactory : InetSocketAddress=>SocketRepresentation) {
   val socket = socketFactory(address)
   def send(msg: RemoteMessageProtocol)  {
-    msg.writeDelimitedTo(socket.out)
+    val size = Serialisation.toWireProtocol(msg).getSerializedSize
+    socket.out.write(intToByteArray(size))
+    Serialisation.toWireProtocol(msg).writeTo(socket.out)
     socket.out.flush()
   }
+
+  private def intToByteArray(value:Int)  =
+        Array(
+                (value >>> 24).asInstanceOf[Byte],
+                (value >>> 16).asInstanceOf[Byte],
+                (value >>> 8).asInstanceOf[Byte],
+                value.asInstanceOf[Byte])
+
 }
 
 trait SocketRepresentation{
