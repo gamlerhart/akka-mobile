@@ -1,9 +1,9 @@
-package info.gamlor.akkamobile.remote
+package akka.mobile
 
 import akka.dispatch.CompletableFuture
-import java.net.InetSocketAddress
 import akka.remoteinterface.{RemoteClientModule, RemoteSupport}
 import akka.actor._
+import java.net.{InetAddress, InetSocketAddress}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -19,7 +19,7 @@ class ClientRemote extends RemoteSupport with RemoteClientModule{
 
   def address =notImplemented
 
-  def start(host: String, port: Int, loader: Option[ClassLoader])  =notImplemented
+  def start(host: String, port: Int, loader: Option[ClassLoader])  = this
 
   def shutdownServerModule()  =notImplemented
 
@@ -52,9 +52,20 @@ class ClientRemote extends RemoteSupport with RemoteClientModule{
 
   def typedActorFor[T](intfClass: Class[T], serviceId: String, implClassName: String, timeout: Long, host: String, port: Int, loader: Option[ClassLoader]) = notImplemented
 
-  def actorFor(serviceId: String, className: String, timeout: Long, hostname: String, port: Int, loader: Option[ClassLoader]) = notImplemented
+  def actorFor(serviceId: String, className: String, timeout: Long, hostname: String, port: Int, loader: Option[ClassLoader]) = {
+    ClientRemoteActorRef(new InetSocketAddress(hostname,port)).start()
+  }
 
-  def send[T](message: Any, senderOption: Option[ActorRef], senderFuture: Option[CompletableFuture[T]], remoteAddress: InetSocketAddress, timeout: Long, isOneWay: Boolean, actorRef: ActorRef, typedActorInfo: Option[(String, String)], actorType: ActorType, loader: Option[ClassLoader]) = notImplemented
+  def send[T](message: Any,
+              senderOption: Option[ActorRef],
+              senderFuture: Option[CompletableFuture[T]],
+              remoteAddress: InetSocketAddress,
+              timeout: Long,
+              isOneWay: Boolean,
+              actorRef: ActorRef,
+              typedActorInfo: Option[(String, String)],
+              actorType: ActorType,
+              loader: Option[ClassLoader]) = notImplemented
 
   def optimizeLocalScoped_?() = notImplemented
 

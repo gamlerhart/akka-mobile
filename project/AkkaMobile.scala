@@ -17,15 +17,17 @@ object MyBuild extends Build {
   lazy val akkamobile: Project = Project(
     id = "akka-mobile",
     base = file("./akka-mobile"),
-    settings = defaultSettings ++ Seq(
+    settings = defaultSettings ++ Seq(	
+      unmanagedBase <<= baseDirectory { base => base / "lib" },
       libraryDependencies ++= Seq(akkaActors, scalaTest)
     ))
+	
   lazy val akkamobileTest: Project = Project(
     id = "akka-mobile-test",
     base = file("./akka-mobile-test"),
     dependencies = Seq(akkamobile),
     settings = defaultSettings ++ Seq(
-      libraryDependencies ++= Seq(akkaActors, akkaRemoteActors, scalaTest)
+      libraryDependencies ++= Seq(akkaActors, akkaRemoteActors, scalaTest, akkaTestKit)
     ))
 
 
@@ -48,6 +50,9 @@ object MyBuild extends Build {
 object Dependencies {
 
   val scalaTest = "org.scalatest" %% "scalatest" % "1.6.1" % "test"
+  val akkaTestKit = "se.scalablesolutions.akka" % "akka-testkit" % "1.2" % "test"
+
+
   val akkaActors = "se.scalablesolutions.akka" % "akka-actor" % "1.2"
   val akkaRemoteActors = "se.scalablesolutions.akka" % "akka-remote" % "1.2"
 }

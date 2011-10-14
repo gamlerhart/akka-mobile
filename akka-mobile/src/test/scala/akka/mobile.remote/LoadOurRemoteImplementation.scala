@@ -1,16 +1,15 @@
-package info.gamlor.akkamobile.remote
+package akka.mobile
 
-import org.scalatest.Spec
-import akka.actor.{Actor, Actors}
+import akka.actor.Actor
 import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.{GivenWhenThen, Spec}
 
 /**
  * @author roman.stoffel@gamlor.info
  * @since 13.10.11
  */
 
-class LoadOurRemoteImplementation  extends Spec {
-
+class LoadOurRemoteImplementation  extends Spec{
   describe("Akka") {
 
     it("should load our remote implementation") {
