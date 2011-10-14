@@ -1,0 +1,1 @@
+..\tools\protoc --java_out .\src\main\java .\src\main\protocol\RemoteProtocol.proto

@@ -5,7 +5,7 @@
  */
 
 option java_package = "akka.remote.protocol";
-option optimize_for = LITE_RUNTIME;
+//option optimize_for = LITE_RUNTIME;
 
 /******************************************
   Compile with:
