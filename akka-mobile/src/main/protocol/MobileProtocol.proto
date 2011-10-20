@@ -38,9 +38,7 @@ message MobileMessageProtocol {
  */
 message RemoteActorRefProtocol {
   required string classOrServiceName = 1;
-  required string actorClassname = 2;
-  required AddressProtocol homeAddress = 3;
-  optional uint64 timeout = 4;
+  required AddressProtocol homeAddress = 2;
 }
 
 /**

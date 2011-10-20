@@ -11,7 +11,7 @@ import java.net.InetSocketAddress
  * @since 13.10.11
  */
 
-case class ClientRemoteActorRef(address : InetSocketAddress, serviceId : String) extends ActorRef with ScalaActorRef {
+case class ClientRemoteActorRef(address: InetSocketAddress, serviceId: String) extends ActorRef with ScalaActorRef {
 
   id = serviceId
 
@@ -26,33 +26,26 @@ case class ClientRemoteActorRef(address : InetSocketAddress, serviceId : String)
     this
   }
 
-  def stop() {notImplemented}
+  def stop() {
+    notImplemented
+  }
 
-  @scala.deprecated("Will be removed after 1.1, use Actor.actorOf instead")
-  def spawn(clazz: Class[_]) = notImplemented
-
-  @scala.deprecated("Will be removed after 1.1, client managed actors will be removed")
-  def spawnRemote(clazz: Class[_], hostname: String, port: Int, timeout: Long) = notImplemented
-
-  @scala.deprecated("Will be removed after 1.1, use use Actor.remote.actorOf instead and then link on success")
-  def spawnLink(clazz: Class[_]) = notImplemented
-
-  @scala.deprecated("Will be removed after 1.1, client managed actors will be removed")
-  def spawnLinkRemote(clazz: Class[_], hostname: String, port: Int, timeout: Long) = notImplemented
 
   def postMessageToMailbox(message: Any, channel: UntypedChannel) = {
     val chSender = channel match {
       case ref: ActorRef ⇒ Some(ref)
-      case _             ⇒ None
+      case _ ⇒ None
     }
     Actor.remote.send[Any](message, chSender, None, homeAddress.get, timeout, true, this, None, ActorType.ScalaActor, None)
   }
 
-  def postMessageToMailboxAndCreateFutureResultWithTimeout(message: Any, timeout: Long, channel: UntypedChannel)  = notImplemented
+  def postMessageToMailboxAndCreateFutureResultWithTimeout(message: Any, timeout: Long, channel: UntypedChannel) = notImplemented
 
-  def registerSupervisorAsRemoteActor  = notImplemented
+  def registerSupervisorAsRemoteActor = notImplemented
 
-  def notImplemented = {throw new Error("Not Implemented")}
+  def notImplemented = {
+    throw new Error("Not Implemented")
+  }
 
   // NOT SUPPORTED
   def actorClass: Class[_ <: Actor] = unsupported

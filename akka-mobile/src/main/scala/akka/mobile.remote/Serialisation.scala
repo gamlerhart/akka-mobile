@@ -3,7 +3,7 @@ package akka.mobile.remote
 import com.eaio.uuid.UUID
 import akka.mobile.protocol.MobileProtocol._
 import com.google.protobuf.ByteString
-import akka.actor.{Actor, LocalActorRef, ActorRef}
+import akka.actor.{LocalActorRef, ActorRef}
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 
 /**
@@ -13,14 +13,24 @@ import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, Byt
 
 
 object Serialisation {
+
   def toWireProtocol(rmp: MobileMessageProtocol): AkkaMobileProtocol = {
     val arp = AkkaMobileProtocol.newBuilder
     arp.setMessage(rmp)
     arp.build
   }
 
-  def oneWayMessageToActor( senderUUID:UUID, actorID:String, sender : Option[ActorRef],  msg : Any) = {
-    val serializeUUID = (uuid:UUID) => {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol): ActorRef = {
+    val remoteActorId = refInfo.getClassOrServiceName
+    return refInfo.getHomeAddress.getType match {
+      case AddressType.DEVICE_ADDRESS => null
+      case AddressType.SERVICE_ADDRESS => throw new Error("TODO")
+      case ue => throw new Error("Unexpected type " + ue)
+    }
+  }
+
+  def oneWayMessageToActor(senderUUID: UUID, actorID: String, sender: Option[ActorRef], msg: Any) = {
+    val serializeUUID = (uuid: UUID) => {
       UuidProtocol.newBuilder().setHigh(uuid.getTime).setLow(uuid.getClockSeqAndNode)
     }
     val builder = MobileMessageProtocol.newBuilder()
@@ -28,13 +38,13 @@ object Serialisation {
       .setOneWay(true)
       .setMessage(serializeMsg(msg))
       .setActorInfo({
-          ActorInfoProtocol.newBuilder()
-            .setActorType(ActorType.SCALA_ACTOR)
-            .setUuid(serializeUUID(senderUUID))
-            .setId(actorID)
-            .setTarget(actorID)
-            .setTimeout(1000)
-        })
+      ActorInfoProtocol.newBuilder()
+        .setActorType(ActorType.SCALA_ACTOR)
+        .setUuid(serializeUUID(senderUUID))
+        .setId(actorID)
+        .setTarget(actorID)
+        .setTimeout(1000)
+    })
 
     sender match {
       case Some(r) => {
@@ -52,9 +62,7 @@ object Serialisation {
 
       RemoteActorRefProtocol.newBuilder
         .setClassOrServiceName("uuid:" + localActor.uuid.toString)
-        .setActorClassname(localActor.actorClassName)
         .setHomeAddress(toAddressProtocol(localActor))
-        .setTimeout(localActor.timeout)
         .build
     case _ => throw new Error("Not implemented")
   }
@@ -66,7 +74,7 @@ object Serialisation {
       .build
   }
 
-  private def serializeMsg(msg : Any) : MessageProtocol.Builder = {
+  private def serializeMsg(msg: Any): MessageProtocol.Builder = {
     val msgBuilder = MessageProtocol.newBuilder();
     msgBuilder.setSerializationScheme(SerializationSchemeType.JAVA)
     msgBuilder.setMessage(ByteString.copyFrom(javaSerialize(msg)))
@@ -74,26 +82,27 @@ object Serialisation {
   }
 
 
-  def deSerializeMsg(msg : MessageProtocol) : AnyRef= {
+  def deSerializeMsg(msg: MessageProtocol): AnyRef = {
     msg.getSerializationScheme match {
       case SerializationSchemeType.JAVA => javaDeSerialize(msg.getMessage.toByteArray)
       case _ => throw new Error("Not yet implemented")
     }
   }
 
-  private def javaSerialize(msg : Any) : Array[Byte]={
-      val bos = new ByteArrayOutputStream
-      val out = new ObjectOutputStream(bos)
-      out.writeObject(msg)
-      out.close()
-      bos.toByteArray
+  private def javaSerialize(msg: Any): Array[Byte] = {
+    val bos = new ByteArrayOutputStream
+    val out = new ObjectOutputStream(bos)
+    out.writeObject(msg)
+    out.close()
+    bos.toByteArray
   }
+
   private def javaDeSerialize(bytes: Array[Byte]): AnyRef = {
-      val in = new ObjectInputStream(new ByteArrayInputStream(bytes))
-      try {
-        in.readObject
-      } finally {
-        in.close()
-      }
+    val in = new ObjectInputStream(new ByteArrayInputStream(bytes))
+    try {
+      in.readObject
+    } finally {
+      in.close()
     }
+  }
 }

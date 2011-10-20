@@ -43,6 +43,11 @@ class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
 
 
     val msgForActor = Serialisation.deSerializeMsg(message.getMessage);
+    val sender = if (message.hasSender) {
+      Serialisation.deSerializeActorRef(message.getSender)
+    } else {
+      None
+    }
 
     if (message.getOneWay) {
       actor.postMessageToMailbox(msgForActor, None)
