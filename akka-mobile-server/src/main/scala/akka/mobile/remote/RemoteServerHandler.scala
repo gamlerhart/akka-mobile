@@ -14,7 +14,7 @@ import akka.mobile.protocol.MobileProtocol.{AddressType, RemoteActorRefProtocol,
 
 @ChannelHandler.Sharable
 class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
-  extends SimpleChannelUpstreamHandler with RemoteMessaging {
+  extends SimpleChannelUpstreamHandler with MessageSink {
 
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) {

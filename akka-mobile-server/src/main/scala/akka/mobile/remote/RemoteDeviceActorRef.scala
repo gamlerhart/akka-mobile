@@ -13,7 +13,7 @@ import akka.actor._
 
 case class RemoteDeviceActorRef(actorId: ClientId,
                                 serviceId: String,
-                                remoteService: RemoteMessaging)
+                                remoteService: MessageSink)
   extends ActorRef with ScalaActorRef with NotImplementedActorRef {
 
   start()
