@@ -1,6 +1,6 @@
 package akka.mobile.remote
 
-import akka.remote.protocol.RemoteProtocol.RemoteMessageProtocol
+import akka.mobile.protocol.RemoteProtocol.RemoteMessageProtocol
 import java.net.{Socket, InetSocketAddress}
 import java.io.{OutputStream, InputStream}
 

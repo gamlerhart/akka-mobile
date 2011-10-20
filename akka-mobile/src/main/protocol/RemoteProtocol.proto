@@ -4,8 +4,8 @@
  * Modified by Roman Stoffel roman.stoffel@gamlor.info
  */
 
-option java_package = "akka.remote.protocol";
-//option optimize_for = LITE_RUNTIME;
+option java_package = "akka.mobile.protocol";
+option optimize_for = LITE_RUNTIME;
 
 /******************************************
   Compile with:

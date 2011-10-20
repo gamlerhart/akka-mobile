@@ -1,7 +1,7 @@
 package akka.mobile.remote
 
 import com.eaio.uuid.UUID
-import akka.remote.protocol.RemoteProtocol._
+import akka.mobile.protocol.RemoteProtocol._
 import java.io.{ObjectOutputStream, ByteArrayOutputStream}
 import com.google.protobuf.ByteString
 import akka.actor.{Actor, LocalActorRef, ActorRef}

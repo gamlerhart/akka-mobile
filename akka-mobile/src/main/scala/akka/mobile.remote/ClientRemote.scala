@@ -4,7 +4,7 @@ import akka.dispatch.CompletableFuture
 import akka.remoteinterface.{RemoteClientModule, RemoteSupport}
 import akka.actor._
 import java.net.{InetAddress, InetSocketAddress}
-import akka.remote.protocol.RemoteProtocol.AkkaRemoteProtocol
+import akka.mobile.protocol.RemoteProtocol.AkkaRemoteProtocol
 
 /**
  * @author roman.stoffel@gamlor.info

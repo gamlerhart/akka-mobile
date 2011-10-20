@@ -22,12 +22,18 @@ object MyBuild extends Build {
       libraryDependencies ++= Seq(akkaActors, scalaTest)
     ))
 	
+  lazy val akkamobileServer: Project = Project(
+    id = "akka-mobile-server",
+    base = file("./akka-mobile-server"),
+    dependencies = Seq(akkamobile)
+  )
+	
   lazy val akkamobileTest: Project = Project(
     id = "akka-mobile-test",
     base = file("./akka-mobile-test"),
-    dependencies = Seq(akkamobile),
+    dependencies = Seq(akkamobile,akkamobileServer),
     settings = defaultSettings ++ Seq(
-      libraryDependencies ++= Seq(akkaActors, akkaRemoteActors, scalaTest, akkaTestKit)
+      libraryDependencies ++= Seq(akkaActors, scalaTest, akkaTestKit)
     ))
 
 

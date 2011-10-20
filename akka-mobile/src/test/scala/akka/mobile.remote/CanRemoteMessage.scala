@@ -5,7 +5,7 @@ import org.scalatest.matchers.ShouldMatchers
 import java.net.{ServerSocket, InetSocketAddress}
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 import com.eaio.uuid.UUID
-import akka.remote.protocol.RemoteProtocol._
+import akka.mobile.protocol.RemoteProtocol._
 
 /**
  * @author roman.stoffel@gamlor.info
