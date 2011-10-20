@@ -54,11 +54,9 @@ message MessageProtocol {
  * Defines the actor info.
  */
 message ActorInfoProtocol {
-  required UuidProtocol uuid = 1;
-  required string target = 2;
-  required uint64 timeout = 3;
-  required ActorType actorType = 4;
-  optional string id = 5;
+  required string target = 1;
+  required ActorType actorType = 2;
+  optional string id = 3;
 }
 
 /**

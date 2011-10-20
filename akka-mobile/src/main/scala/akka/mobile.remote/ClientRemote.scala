@@ -3,17 +3,16 @@ package akka.mobile.remote
 import akka.dispatch.CompletableFuture
 import akka.remoteinterface.{RemoteClientModule, RemoteSupport}
 import akka.actor._
-import java.net.{InetAddress, InetSocketAddress}
-import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
+import java.net.InetSocketAddress
 
 /**
  * @author roman.stoffel@gamlor.info
  * @since 13.10.11
  */
 
-class ClientRemote(messaging : RemoteMessaging) extends RemoteSupport with RemoteClientModule{
+class ClientRemote(messaging: RemoteMessaging) extends RemoteSupport with RemoteClientModule {
 
-  def this() = this(RemoteMessaging())
+  def this() = this (RemoteMessaging())
 
   def registerTypedActor(id: String, typedActor: AnyRef) {}
 
@@ -21,34 +20,34 @@ class ClientRemote(messaging : RemoteMessaging) extends RemoteSupport with Remot
 
   def name = notImplemented
 
-  def address =notImplemented
+  def address = notImplemented
 
-  def start(host: String, port: Int, loader: Option[ClassLoader])  = this
+  def start(host: String, port: Int, loader: Option[ClassLoader]) = this
 
-  def shutdownServerModule()  =notImplemented
+  def shutdownServerModule() = notImplemented
 
-  def registerTypedPerSessionActor(id: String, factory: => AnyRef)  =notImplemented
+  def registerTypedPerSessionActor(id: String, factory: => AnyRef) = notImplemented
 
-  def registerByUuid(actorRef: ActorRef)  =notImplemented
+  def registerByUuid(actorRef: ActorRef) = notImplemented
 
-  def register(id: String, actorRef: ActorRef)  =notImplemented
+  def register(id: String, actorRef: ActorRef) = notImplemented
 
-  def registerPerSession(id: String, factory: => ActorRef)  =notImplemented
+  def registerPerSession(id: String, factory: => ActorRef) = notImplemented
 
-  def unregister(actorRef: ActorRef)  =notImplemented
+  def unregister(actorRef: ActorRef) = notImplemented
 
-  def unregister(id: String) =notImplemented
+  def unregister(id: String) = notImplemented
 
-  def unregisterPerSession(id: String) =notImplemented
+  def unregisterPerSession(id: String) = notImplemented
 
-  def unregisterTypedActor(id: String) =notImplemented
+  def unregisterTypedActor(id: String) = notImplemented
 
-  def unregisterTypedPerSessionActor(id: String) =notImplemented
+  def unregisterTypedPerSessionActor(id: String) = notImplemented
 
   @scala.deprecated("Will be removed after 1.1")
   def clientManagedActorOf(factory: () => Actor, host: String, port: Int) = notImplemented
 
-  def shutdownClientModule() =notImplemented
+  def shutdownClientModule() = notImplemented
 
   def shutdownClientConnection(address: InetSocketAddress) = notImplemented
 
@@ -57,7 +56,7 @@ class ClientRemote(messaging : RemoteMessaging) extends RemoteSupport with Remot
   def typedActorFor[T](intfClass: Class[T], serviceId: String, implClassName: String, timeout: Long, host: String, port: Int, loader: Option[ClassLoader]) = notImplemented
 
   def actorFor(serviceId: String, className: String, timeout: Long, hostname: String, port: Int, loader: Option[ClassLoader]) = {
-    ClientRemoteActorRef(new InetSocketAddress(hostname,port),serviceId).start()
+    ClientRemoteActorRef(new InetSocketAddress(hostname, port), serviceId).start()
   }
 
   def send[T](message: Any,
@@ -69,14 +68,14 @@ class ClientRemote(messaging : RemoteMessaging) extends RemoteSupport with Remot
               actorRef: ActorRef,
               typedActorInfo: Option[(String, String)],
               actorType: ActorType,
-              loader: Option[ClassLoader]):Option[CompletableFuture[T]] = {
-    messaging.channelFor(remoteAddress).send(Serialisation.oneWayMessageToActor(actorRef.uuid,actorRef.id,senderOption,message));
+              loader: Option[ClassLoader]): Option[CompletableFuture[T]] = {
+    messaging.channelFor(remoteAddress).send(Serialisation.oneWayMessageToActor(actorRef.id, senderOption, message));
     None
   }
 
   def optimizeLocalScoped_?() = notImplemented
 
-  def registerSupervisorForActor(actorRef: ActorRef): ActorRef= notImplemented
+  def registerSupervisorForActor(actorRef: ActorRef): ActorRef = notImplemented
 
   def deregisterSupervisorForActor(actorRef: ActorRef): ActorRef = notImplemented
 
@@ -86,5 +85,7 @@ class ClientRemote(messaging : RemoteMessaging) extends RemoteSupport with Remot
   @deprecated("Will be removed after 1.1", "1.1")
   def unregisterClientManagedActor(hostname: String, port: Int, uuid: Uuid): Unit = notImplemented
 
-  def notImplemented = {throw new Error("Not yet implemented")}
+  def notImplemented = {
+    throw new Error("Not yet implemented")
+  }
 }

@@ -3,8 +3,10 @@ package akka.mobile.remote
 import org.jboss.netty.channel.group.ChannelGroup
 import org.jboss.netty.channel.{MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler}
 import akka.mobile.protocol.MobileProtocol.ActorType._
-import akka.actor.{ActorRef, IllegalActorStateException}
 import akka.mobile.protocol.MobileProtocol.{AddressType, RemoteActorRefProtocol, MobileMessageProtocol, AkkaMobileProtocol}
+import java.util.concurrent.ConcurrentHashMap
+import akka.actor.{ActorRef, IllegalActorStateException}
+import org.jboss.netty.channel.{Channel => NettyChannel}
 
 /**
  *
@@ -15,12 +17,12 @@ import akka.mobile.protocol.MobileProtocol.{AddressType, RemoteActorRefProtocol,
 @ChannelHandler.Sharable
 class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
   extends SimpleChannelUpstreamHandler with MessageSink {
-
+  private val clientChannels = new ConcurrentHashMap[ClientId, NettyChannel]()
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) {
     event.getMessage match {
       case remoteProtocol: AkkaMobileProtocol if remoteProtocol.hasMessage => {
-        dispatchMessage(remoteProtocol.getMessage)
+        dispatchMessage(remoteProtocol.getMessage, ctx.getChannel)
       }
       case _ => {
         throw new Error("Not implemented")
@@ -29,30 +31,42 @@ class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
   }
 
 
-  def send(clientId: ClientId, serviceId: String, value: Any, option: Option[ActorRef]) {
+  def send(clientId: ClientId, serviceId: String, message: Any, sender: Option[ActorRef]) {
+    val backChannel = clientChannels.get(clientId)
+
+    val msg = AkkaMobileProtocol.newBuilder()
+      .setMessage(Serialisation.oneWayMessageToActor(serviceId, sender, message))
+      .build();
+    backChannel.write(msg);
 
   }
 
-  private def dispatchMessage(message: MobileMessageProtocol) {
+  private def dispatchMessage(message: MobileMessageProtocol, channel: NettyChannel) {
+
+    val sender = if (message.hasSender) {
+      Some(deSerializeActorRef(message.getSender))
+    } else {
+      None
+    }
+
+    sender.foreach(si => {
+      clientChannels.put(si.clientId, channel)
+    })
+
     message.getActorInfo.getActorType match {
-      case SCALA_ACTOR ⇒ dispatchToActor(message)
+      case SCALA_ACTOR ⇒ dispatchToActor(message, sender)
       case TYPED_ACTOR ⇒ throw new IllegalActorStateException("ActorType TYPED_ACTOR is currently not supported")
       case JAVA_ACTOR ⇒ throw new IllegalActorStateException("ActorType JAVA_ACTOR is currently not supported")
       case other ⇒ throw new IllegalActorStateException("Unknown ActorType [" + other + "]")
     }
   }
 
-  private def dispatchToActor(message: MobileMessageProtocol) {
+  private def dispatchToActor(message: MobileMessageProtocol, sender: Option[ActorRef]) {
     val actorInfo = message.getActorInfo
     val actor = actorRegistry.findActorById(actorInfo.getId)
 
 
     val msgForActor = Serialisation.deSerializeMsg(message.getMessage);
-    val sender = if (message.hasSender) {
-      Some(deSerializeActorRef(message.getSender))
-    } else {
-      None
-    }
 
     if (message.getOneWay) {
       actor.postMessageToMailbox(msgForActor, sender)
@@ -62,7 +76,7 @@ class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
   }
 
 
-  private def deSerializeActorRef(refInfo: RemoteActorRefProtocol): ActorRef = {
+  private def deSerializeActorRef(refInfo: RemoteActorRefProtocol): RemoteDeviceActorRef = {
     val remoteActorId = refInfo.getClassOrServiceName
     val homeAddress = refInfo.getHomeAddress
     homeAddress.getType match {

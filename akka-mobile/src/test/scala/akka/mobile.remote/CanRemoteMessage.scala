@@ -2,7 +2,7 @@ package akka.mobile.remote
 
 import org.scalatest.Spec
 import org.scalatest.matchers.ShouldMatchers
-import java.net.{ServerSocket, InetSocketAddress}
+import java.net.InetSocketAddress
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 import com.eaio.uuid.UUID
 import akka.mobile.protocol.MobileProtocol._
@@ -13,7 +13,7 @@ import akka.mobile.protocol.MobileProtocol._
  */
 
 class CanRemoteMessage extends Spec with ShouldMatchers {
-  val toTest = RemoteMessaging(a=>new MockSocket())
+  val toTest = RemoteMessaging(a => new MockSocket())
 
   describe("Remote Messaging") {
     it("can get message channel for host and port") {
@@ -41,13 +41,11 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       .setUuid(newUUID())
       .setOneWay(true)
       .setActorInfo({
-          ActorInfoProtocol.newBuilder()
-            .setActorType(ActorType.SCALA_ACTOR)
-            .setUuid(newUUID())
-            .setId("remote-actor")
-            .setTarget("a.class.name")
-            .setTimeout(1000)
-        })
+      ActorInfoProtocol.newBuilder()
+        .setActorType(ActorType.SCALA_ACTOR)
+        .setId("remote-actor")
+        .setTarget("a.class.name")
+    })
       .build()
   }
 
@@ -63,5 +61,5 @@ class MockSocket() extends SocketRepresentation {
 
   def close() = outBuffer.close()
 
-  def asInputStreamFrom(startLocation:Int) = new ByteArrayInputStream(outBuffer.toByteArray.drop(startLocation))
+  def asInputStreamFrom(startLocation: Int) = new ByteArrayInputStream(outBuffer.toByteArray.drop(startLocation))
 }

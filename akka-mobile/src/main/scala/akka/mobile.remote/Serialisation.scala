@@ -20,7 +20,7 @@ object Serialisation {
     arp.build
   }
 
-  def oneWayMessageToActor(senderUUID: UUID, actorID: String, sender: Option[ActorRef], msg: Any) = {
+  def oneWayMessageToActor(actorID: String, sender: Option[ActorRef], msg: Any) = {
     val serializeUUID = (uuid: UUID) => {
       UuidProtocol.newBuilder().setHigh(uuid.getTime).setLow(uuid.getClockSeqAndNode)
     }
@@ -31,10 +31,8 @@ object Serialisation {
       .setActorInfo({
       ActorInfoProtocol.newBuilder()
         .setActorType(ActorType.SCALA_ACTOR)
-        .setUuid(serializeUUID(senderUUID))
         .setId(actorID)
         .setTarget(actorID)
-        .setTimeout(1000)
     })
 
     sender match {

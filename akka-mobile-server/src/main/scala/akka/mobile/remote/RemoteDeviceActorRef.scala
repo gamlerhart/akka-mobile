@@ -11,14 +11,14 @@ import akka.actor._
  * @since 20.10.11
  */
 
-case class RemoteDeviceActorRef(actorId: ClientId,
+case class RemoteDeviceActorRef(clientId: ClientId,
                                 serviceId: String,
                                 remoteService: MessageSink)
   extends ActorRef with ScalaActorRef with NotImplementedActorRef {
 
   start()
 
-  id = actorId.toString
+  id = clientId.toString
 
   @scala.deprecated("Remoting will become fully transparent in the future")
   def homeAddress = unsupported
@@ -32,7 +32,7 @@ case class RemoteDeviceActorRef(actorId: ClientId,
       case ref: ActorRef ⇒ Some(ref)
       case _ ⇒ None
     }
-    remoteService.send(actorId, serviceId, message, sender)
+    remoteService.send(clientId, serviceId, message, chSender)
   }
 
   def postMessageToMailboxAndCreateFutureResultWithTimeout(message: Any, timeout: Long, channel: UntypedChannel)
