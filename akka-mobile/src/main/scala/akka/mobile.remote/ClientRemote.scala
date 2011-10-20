@@ -70,7 +70,7 @@ class ClientRemote(messaging : RemoteMessaging) extends RemoteSupport with Remot
               typedActorInfo: Option[(String, String)],
               actorType: ActorType,
               loader: Option[ClassLoader]):Option[CompletableFuture[T]] = {
-    messaging.channelFor(remoteAddress).send(Serialisation.oneWayMessageToActor(actorRef.uuid,actorRef.id,message));
+    messaging.channelFor(remoteAddress).send(Serialisation.oneWayMessageToActor(actorRef.uuid,actorRef.id,senderOption,message));
     None
   }
 

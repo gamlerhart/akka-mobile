@@ -35,7 +35,7 @@
         </not>
     </condition>
 
-    <target name="compile-scala" depends="compile"
+    <target name="compile-scala" depends="-compile"
             if="contains.scala.sources" unless="do.not.compile"
             description="Compiles project's .scala files into .class files">
         <condition property="logging" value="verbose" else="none">
@@ -50,7 +50,6 @@
                 classpathref="jar.libs.ref">
             <src path="${source.absolute.dir}"/>
             <src path="${gen.absolute.dir}"/>
-            <src refid="project.libraries.src"/>
             <classpath>
                 <pathelement location="${scala-library.jar}"/>
                 <fileset dir="${akka-lib-dir}" includes="*.jar"></fileset>
