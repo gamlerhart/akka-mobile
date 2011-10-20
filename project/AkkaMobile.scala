@@ -25,7 +25,10 @@ object MyBuild extends Build {
   lazy val akkamobileServer: Project = Project(
     id = "akka-mobile-server",
     base = file("./akka-mobile-server"),
-    dependencies = Seq(akkamobile)
+    dependencies = Seq(akkamobile),
+    settings = defaultSettings ++ Seq(	
+      libraryDependencies ++= Seq(akkaActors,akkaRemoteActors,netty, scalaTest)
+    )
   )
 	
   lazy val akkamobileTest: Project = Project(
@@ -33,7 +36,7 @@ object MyBuild extends Build {
     base = file("./akka-mobile-test"),
     dependencies = Seq(akkamobile,akkamobileServer),
     settings = defaultSettings ++ Seq(
-      libraryDependencies ++= Seq(akkaActors, scalaTest, akkaTestKit)
+      libraryDependencies ++= Seq(akkaActors,netty, scalaTest, akkaTestKit)
     ))
 
 
@@ -56,6 +59,7 @@ object MyBuild extends Build {
 object Dependencies {
 
   val scalaTest = "org.scalatest" %% "scalatest" % "1.6.1" % "test"
+  val netty         = "org.jboss.netty"             % "netty"   % "3.2.5.Final"  
   val akkaTestKit = "se.scalablesolutions.akka" % "akka-testkit" % "1.2" % "test"
 
 

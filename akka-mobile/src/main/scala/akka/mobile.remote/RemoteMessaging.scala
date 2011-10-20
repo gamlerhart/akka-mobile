@@ -55,6 +55,7 @@ class TCPSocket(addr: InetSocketAddress) extends  SocketRepresentation{
     val s = new Socket()
     s.connect(addr)
     s.setKeepAlive(true)
+    s.setTcpNoDelay(true)
     s
   }
 
