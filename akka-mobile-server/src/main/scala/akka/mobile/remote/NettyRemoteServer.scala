@@ -11,21 +11,20 @@ import org.jboss.netty.handler.codec.protobuf.{ProtobufEncoder, ProtobufDecoder}
 import org.jboss.netty.handler.execution.{OrderedMemoryAwareThreadPoolExecutor, ExecutionHandler}
 import java.util.concurrent.{TimeUnit, ThreadFactory, Executors}
 import org.jboss.netty.channel._
-import akka.mobile.protocol.MobileProtocol.{MobileMessageProtocol, AkkaMobileProtocol}
-import akka.mobile.protocol.MobileProtocol.ActorType._
-import akka.actor.{IllegalActorStateException, ActorRef}
-import akka.remote.{MessageSerializer, RemoteServerSettings}
+import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
+import akka.actor.ActorRef
+import akka.remote.RemoteServerSettings
 
 /**
  * @author roman.stoffel@gamlor.info
  * @since 20.10.11
  */
 object NettyRemoteServer {
-  def start(hostName: String, portNumber: Int): MobileRemoteServer
+  def start(hostName: String, portNumber: Int): RemoteServer
   = new NettyRemoteServer(hostName, portNumber)
 
 
-  class NettyRemoteServer(hostName: String, portNumber: Int) extends MobileRemoteServer {
+  class NettyRemoteServer(hostName: String, portNumber: Int) extends RemoteServer {
     private val actorRegistry = new ActorRegistry();
     @volatile var isAlive = true
     val name = "NettyRemoteServer@" + hostName + ":" + portNumber
@@ -93,7 +92,6 @@ object NettyRemoteServer {
       new StaticChannelPipeline(stages: _*)
     }
   }
-
 
 
 }

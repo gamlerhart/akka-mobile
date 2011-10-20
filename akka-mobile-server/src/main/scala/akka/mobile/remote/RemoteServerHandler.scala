@@ -14,7 +14,7 @@ import akka.mobile.protocol.MobileProtocol.{AddressType, RemoteActorRefProtocol,
 
 @ChannelHandler.Sharable
 class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
-  extends SimpleChannelUpstreamHandler {
+  extends SimpleChannelUpstreamHandler with RemoteMessaging {
 
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) {
@@ -26,6 +26,11 @@ class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
         throw new Error("Not implemented")
       }
     }
+  }
+
+
+  def send(clientId: ClientId, serviceId: String, value: Any, option: Option[ActorRef]) {
+
   }
 
   private def dispatchMessage(message: MobileMessageProtocol) {
@@ -62,7 +67,8 @@ class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
     val homeAddress = refInfo.getHomeAddress
     homeAddress.getType match {
       case AddressType.DEVICE_ADDRESS => {
-        RemoteDeviceActorRef(Serialisation.deserializeClientId(homeAddress.getDeviceAddress), remoteActorId)
+        RemoteDeviceActorRef(Serialisation.deserializeClientId(homeAddress.getDeviceAddress),
+          remoteActorId, this)
       }
       case AddressType.SERVICE_ADDRESS => throw new Error("TODO")
       case ue => throw new Error("Unexpected type " + ue)

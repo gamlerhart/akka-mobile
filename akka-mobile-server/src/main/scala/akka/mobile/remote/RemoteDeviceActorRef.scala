@@ -11,7 +11,9 @@ import akka.actor._
  * @since 20.10.11
  */
 
-case class RemoteDeviceActorRef(actorId: ClientId, serviceId: String)
+case class RemoteDeviceActorRef(actorId: ClientId,
+                                serviceId: String,
+                                remoteService: RemoteMessaging)
   extends ActorRef with ScalaActorRef with NotImplementedActorRef {
 
   start()
@@ -30,7 +32,7 @@ case class RemoteDeviceActorRef(actorId: ClientId, serviceId: String)
       case ref: ActorRef ⇒ Some(ref)
       case _ ⇒ None
     }
-    notImplemented
+    remoteService.send(actorId, serviceId, message, sender)
   }
 
   def postMessageToMailboxAndCreateFutureResultWithTimeout(message: Any, timeout: Long, channel: UntypedChannel)
