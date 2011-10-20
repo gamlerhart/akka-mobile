@@ -27,7 +27,7 @@ object MyBuild extends Build {
     base = file("./akka-mobile-server"),
     dependencies = Seq(akkamobile),
     settings = defaultSettings ++ Seq(	
-      libraryDependencies ++= Seq(akkaActors,akkaRemoteActors,netty, scalaTest)
+      libraryDependencies ++= Seq(akkaActors,akkaRemoteActors,netty, scalaTest, akkaTestKit)
     )
   )
 	
@@ -60,9 +60,8 @@ object Dependencies {
 
   val scalaTest = "org.scalatest" %% "scalatest" % "1.6.1" % "test"
   val netty         = "org.jboss.netty"             % "netty"   % "3.2.5.Final"  
+  
   val akkaTestKit = "se.scalablesolutions.akka" % "akka-testkit" % "1.2" % "test"
-
-
   val akkaActors = "se.scalablesolutions.akka" % "akka-actor" % "1.2"
   val akkaRemoteActors = "se.scalablesolutions.akka" % "akka-remote" % "1.2"
 }

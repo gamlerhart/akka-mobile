@@ -5,7 +5,7 @@ import org.scalatest.matchers.ShouldMatchers
 import java.net.{ServerSocket, InetSocketAddress}
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 import com.eaio.uuid.UUID
-import akka.mobile.protocol.RemoteProtocol._
+import akka.mobile.protocol.MobileProtocol._
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -26,7 +26,7 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       val msg = buildMockMsg()
       msgChannel.send(msg)
 
-      val restoredMsg = AkkaRemoteProtocol.parseFrom(socket.asInputStreamFrom(4)).getMessage
+      val restoredMsg = AkkaMobileProtocol.parseFrom(socket.asInputStreamFrom(4)).getMessage
       restoredMsg should be eq (msg)
     }
   }
@@ -37,7 +37,7 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       val uuid = new UUID()
       UuidProtocol.newBuilder().setHigh(uuid.getTime).setLow(uuid.getClockSeqAndNode).build()
     }
-    RemoteMessageProtocol.newBuilder()
+    MobileMessageProtocol.newBuilder()
       .setUuid(newUUID())
       .setOneWay(true)
       .setActorInfo({

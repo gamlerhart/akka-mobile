@@ -1,20 +1,20 @@
 package akka.mobile.remote
 
 import com.eaio.uuid.UUID
-import akka.mobile.protocol.RemoteProtocol._
-import java.io.{ObjectOutputStream, ByteArrayOutputStream}
+import akka.mobile.protocol.MobileProtocol._
 import com.google.protobuf.ByteString
 import akka.actor.{Actor, LocalActorRef, ActorRef}
-import java.net.InetSocketAddress
+import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 
 /**
  * @author roman.stoffel@gamlor.info
  * @since 14.10.11
  */
 
+
 object Serialisation {
-  def toWireProtocol(rmp: RemoteMessageProtocol): AkkaRemoteProtocol = {
-    val arp = AkkaRemoteProtocol.newBuilder
+  def toWireProtocol(rmp: MobileMessageProtocol): AkkaMobileProtocol = {
+    val arp = AkkaMobileProtocol.newBuilder
     arp.setMessage(rmp)
     arp.build
   }
@@ -23,7 +23,7 @@ object Serialisation {
     val serializeUUID = (uuid:UUID) => {
       UuidProtocol.newBuilder().setHigh(uuid.getTime).setLow(uuid.getClockSeqAndNode)
     }
-    val builder = RemoteMessageProtocol.newBuilder()
+    val builder = MobileMessageProtocol.newBuilder()
       .setUuid(serializeUUID(new UUID()))
       .setOneWay(true)
       .setMessage(serializeMsg(msg))
@@ -40,6 +40,7 @@ object Serialisation {
       case Some(r) => {
         builder.setSender(toRemoteActorRefProtocol(r))
       }
+      case None => throw new Error("Todo")
     }
 
     builder.build()
@@ -59,10 +60,9 @@ object Serialisation {
   }
 
   private def toAddressProtocol(actorRef: ActorRef) = {
-    val address = actorRef.homeAddress.getOrElse(new InetSocketAddress("localhost",8080))
     AddressProtocol.newBuilder
-      .setHostname(address.getAddress.getHostAddress)
-      .setPort(address.getPort)
+      .setType(AddressType.DEVICE_ADDRESS)
+      .setDeviceAddress(DeviceAddress.newBuilder().setAppId("mock").setDeviceID("mock"))
       .build
   }
 
@@ -73,6 +73,14 @@ object Serialisation {
     msgBuilder;
   }
 
+
+  def deSerializeMsg(msg : MessageProtocol) : AnyRef= {
+    msg.getSerializationScheme match {
+      case SerializationSchemeType.JAVA => javaDeSerialize(msg.getMessage.toByteArray)
+      case _ => throw new Error("Not yet implemented")
+    }
+  }
+
   private def javaSerialize(msg : Any) : Array[Byte]={
       val bos = new ByteArrayOutputStream
       val out = new ObjectOutputStream(bos)
@@ -80,4 +88,12 @@ object Serialisation {
       out.close()
       bos.toByteArray
   }
+  private def javaDeSerialize(bytes: Array[Byte]): AnyRef = {
+      val in = new ObjectInputStream(new ByteArrayInputStream(bytes))
+      try {
+        in.readObject
+      } finally {
+        in.close()
+      }
+    }
 }

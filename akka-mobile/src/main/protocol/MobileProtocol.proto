@@ -13,15 +13,14 @@ option optimize_for = LITE_RUNTIME;
   protoc RemoteProtocol.proto --java_out ../java
 *******************************************/
 
-message AkkaRemoteProtocol {
-  optional RemoteMessageProtocol message = 1;
-  optional RemoteControlProtocol instruction = 2;
+message AkkaMobileProtocol {
+  optional MobileMessageProtocol message = 1;
 }
 
 /**
  * Defines a remote message.
  */
-message RemoteMessageProtocol {
+message MobileMessageProtocol {
   required UuidProtocol uuid = 1;
   required ActorInfoProtocol actorInfo = 2;
   required bool oneWay = 3;
@@ -34,21 +33,6 @@ message RemoteMessageProtocol {
 }
 
 /**
- * Defines some control messages for the remoting
- */
-message RemoteControlProtocol {
-  optional string cookie = 1;
-  required CommandType commandType = 2;
-}
-
-/**
- * Defines the type of the RemoteControlProtocol command type
- */
-enum CommandType {
-  SHUTDOWN = 1;
-}
-
-/**
  * Defines a remote ActorRef that "remembers" and uses its original Actor instance
  * on the original node.
  */
@@ -57,45 +41,6 @@ message RemoteActorRefProtocol {
   required string actorClassname = 2;
   required AddressProtocol homeAddress = 3;
   optional uint64 timeout = 4;
-}
-
-/**
- * Defines a remote Typed ActorRef that "remembers" and uses its original typed Actor instance
- * on the original node.
- */
-message RemoteTypedActorRefProtocol {
-  required RemoteActorRefProtocol actorRef = 1;
-  required string interfaceName = 2;
-}
-
-/**
- * Defines a fully serialized remote ActorRef (with serialized Actor instance)
- * that is about to be instantiated on the remote node. It is fully disconnected
- * from its original host.
- */
-message SerializedActorRefProtocol {
-  required UuidProtocol uuid = 1;
-  required string id = 2;
-  required string actorClassname = 3;
-  required AddressProtocol originalAddress  = 4;
-  optional bytes actorInstance = 5;
-  optional string serializerClassname = 6;
-  optional uint64 timeout = 7;
-  optional uint64 receiveTimeout = 8;
-  optional LifeCycleProtocol lifeCycle = 9;
-  optional RemoteActorRefProtocol supervisor = 10;
-  optional bytes hotswapStack = 11;
-  repeated RemoteMessageProtocol messages = 12;
-}
-
-/**
- * Defines a fully serialized remote ActorRef (with serialized typed actor instance)
- * that is about to be instantiated on the remote node. It is fully disconnected
- * from its original host.
- */
-message SerializedTypedActorRefProtocol {
-  required SerializedActorRefProtocol actorRef = 1;
-  required string interfaceName = 2;
 }
 
 /**
@@ -115,16 +60,7 @@ message ActorInfoProtocol {
   required string target = 2;
   required uint64 timeout = 3;
   required ActorType actorType = 4;
-  optional TypedActorInfoProtocol typedActorInfo = 5;
-  optional string id = 6;
-}
-
-/**
- * Defines the typed actor extra info.
- */
-message TypedActorInfoProtocol {
-  required string interface = 1;
-  required string method = 2;
+  optional string id = 5;
 }
 
 /**
@@ -171,16 +107,6 @@ enum LifeCycleType {
   TEMPORARY = 2;
 }
 
-/*
-enum DispatcherType {
-  GLOBAL_EVENT_EXECUTOR_BASED = 1;
-  GLOBAL_REACTOR_SINGLE_THREAD_BASED = 2;
-  GLOBAL_REACTOR_THREAD_POOL_BASED = 3;
-  EVENT_EXECUTOR_BASED = 4;
-  THREAD_BASED = 5;
-}
-*/
-
 /**
  * Defines the life-cycle of a supervised Actor.
  */
@@ -188,12 +114,37 @@ message LifeCycleProtocol {
   required LifeCycleType lifeCycle = 1;
 }
 
+enum AddressType{
+    SERVICE_ADDRESS = 1;
+    DEVICE_ADDRESS = 1;
+}
+
 /**
  * Defines a remote address.
  */
 message AddressProtocol {
+  required AddressType type = 1;
+  optional ServiceAddress serviceAddress = 2;
+  optional DeviceAddress deviceAddress = 3;
+
+}
+
+/**
+ * A service is a server running
+ * It will rarely / never change its address
+ */
+message ServiceAddress{
   required string hostname = 1;
   required uint32 port = 2;
+}
+
+/**
+  * A device is a mobile and changes its address and port all the time
+  * Therefore it is identified with its app / service name
+  */
+message DeviceAddress{
+  required string deviceID = 1;
+  required string appId = 2;
 }
 
 /**
