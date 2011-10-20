@@ -22,7 +22,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
 
       withRunningServer(ctx => {
         val barrier = new CountDownLatch(1);
-        val local = Actor.actorOf(new EchoActor(Some(barrier))).start();
+        val local = Actor.actorOf(new ReceiveCheckActor(Some(barrier))).start();
         ctx.register("echo", local);
         val echo = Actor.remote.actorFor("echo", "localhost", ctx.port);
         echo ! "Hello-Receive-Only"
@@ -36,7 +36,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
     "be able to reply " in {
 
       withRunningServer(ctx => {
-        val local = Actor.actorOf(new EchoActor(None)).start();
+        val local = Actor.actorOf(new ReceiveCheckActor(None)).start();
         ctx.register("echo", local);
         val echo = Actor.remote.actorFor("echo", "localhost", ctx.port);
         echo ! "Ask"
@@ -50,7 +50,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
 
 }
 
-class EchoActor(barrier : Option[CountDownLatch] = null) extends Actor {
+class ReceiveCheckActor(barrier : Option[CountDownLatch] = null) extends Actor {
   protected def receive = {
 
     case "Hello-Receive-Only" => {

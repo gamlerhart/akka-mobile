@@ -1,6 +1,6 @@
 package akka.mobile.remote
 
-import akka.mobile.protocol.RemoteProtocol.RemoteMessageProtocol
+import akka.mobile.protocol.MobileProtocol.MobileMessageProtocol
 import java.net.{Socket, InetSocketAddress}
 import java.io.{OutputStream, InputStream}
 
@@ -26,7 +26,7 @@ object RemoteMessaging {
 
 case class RemoteMessageChannel(address: InetSocketAddress, socketFactory : InetSocketAddress=>SocketRepresentation) {
   val socket = socketFactory(address)
-  def send(msg: RemoteMessageProtocol)  {
+  def send(msg: MobileMessageProtocol)  {
     val size = Serialisation.toWireProtocol(msg).getSerializedSize
     socket.out.write(intToByteArray(size))
     Serialisation.toWireProtocol(msg).writeTo(socket.out)
@@ -55,6 +55,7 @@ class TCPSocket(addr: InetSocketAddress) extends  SocketRepresentation{
     val s = new Socket()
     s.connect(addr)
     s.setKeepAlive(true)
+    s.setTcpNoDelay(true)
     s
   }
 

@@ -1,9 +1,10 @@
 package info.gamlor.remoting
 
-import akka.remote.netty.{NettyRemoteServerModule, NettyRemoteServer, NettyRemoteSupport}
 import akka.event.EventHandler
 import akka.remoteinterface.{RemoteSupport, RemoteModule}
 import akka.actor.ActorRef
+import akka.mobile.remote.{MobileRemoteServer, NettyRemoteServer}
+import akka.mobile.testutils.NetworkUtils
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -11,21 +12,17 @@ import akka.actor.ActorRef
  */
 
 object TestServer {
-  val PORT = 2552
 
   def withRunningServer(toRun : TestServerContext=>Unit){
-    val server = new NettyRemoteSupport {
-
-      override def optimizeLocalScoped_?() = false
-    }
-    server.start("localhost",PORT);
-    toRun(TestServerContext(server,PORT))
+    val port = NetworkUtils.findFreePort()
+    val server = NettyRemoteServer.start("localhost",port);
+    toRun(TestServerContext(server,port))
     server.shutdownServerModule();
   }
 
 }
 
-case class TestServerContext(server : RemoteSupport, port : Int)  {
+case class TestServerContext(server : MobileRemoteServer, port : Int)  {
 
   def register(id:String,actor: ActorRef) {
     server.register(id, actor)
