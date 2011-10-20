@@ -44,13 +44,13 @@ class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
 
     val msgForActor = Serialisation.deSerializeMsg(message.getMessage);
     val sender = if (message.hasSender) {
-      deSerializeActorRef(message.getSender)
+      Some(deSerializeActorRef(message.getSender))
     } else {
       None
     }
 
     if (message.getOneWay) {
-      actor.postMessageToMailbox(msgForActor, None)
+      actor.postMessageToMailbox(msgForActor, sender)
     } else {
       throw new Error("Not yet implemented")
     }

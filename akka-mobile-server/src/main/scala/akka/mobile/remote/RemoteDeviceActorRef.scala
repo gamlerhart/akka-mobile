@@ -14,6 +14,7 @@ import akka.actor._
 case class RemoteDeviceActorRef(actorId: ClientId, serviceId: String)
   extends ActorRef with ScalaActorRef with NotImplementedActorRef {
 
+  start()
 
   id = actorId.toString
 
