@@ -2,9 +2,9 @@ package akka.mobile.remote
 
 import org.jboss.netty.channel.group.ChannelGroup
 import org.jboss.netty.channel.{MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler}
-import akka.mobile.protocol.MobileProtocol.{MobileMessageProtocol, AkkaMobileProtocol}
 import akka.mobile.protocol.MobileProtocol.ActorType._
-import akka.actor.IllegalActorStateException
+import akka.actor.{ActorRef, IllegalActorStateException}
+import akka.mobile.protocol.MobileProtocol.{AddressType, RemoteActorRefProtocol, MobileMessageProtocol, AkkaMobileProtocol}
 
 /**
  *
@@ -44,7 +44,7 @@ class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
 
     val msgForActor = Serialisation.deSerializeMsg(message.getMessage);
     val sender = if (message.hasSender) {
-      Serialisation.deSerializeActorRef(message.getSender)
+      deSerializeActorRef(message.getSender)
     } else {
       None
     }
@@ -53,6 +53,19 @@ class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
       actor.postMessageToMailbox(msgForActor, None)
     } else {
       throw new Error("Not yet implemented")
+    }
+  }
+
+
+  private def deSerializeActorRef(refInfo: RemoteActorRefProtocol): ActorRef = {
+    val remoteActorId = refInfo.getClassOrServiceName
+    val homeAddress = refInfo.getHomeAddress
+    homeAddress.getType match {
+      case AddressType.DEVICE_ADDRESS => {
+        RemoteDeviceActorRef(Serialisation.deserializeClientId(homeAddress.getDeviceAddress), remoteActorId)
+      }
+      case AddressType.SERVICE_ADDRESS => throw new Error("TODO")
+      case ue => throw new Error("Unexpected type " + ue)
     }
   }
 

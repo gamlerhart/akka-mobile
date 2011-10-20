@@ -20,15 +20,6 @@ object Serialisation {
     arp.build
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol): ActorRef = {
-    val remoteActorId = refInfo.getClassOrServiceName
-    return refInfo.getHomeAddress.getType match {
-      case AddressType.DEVICE_ADDRESS => null
-      case AddressType.SERVICE_ADDRESS => throw new Error("TODO")
-      case ue => throw new Error("Unexpected type " + ue)
-    }
-  }
-
   def oneWayMessageToActor(senderUUID: UUID, actorID: String, sender: Option[ActorRef], msg: Any) = {
     val serializeUUID = (uuid: UUID) => {
       UuidProtocol.newBuilder().setHigh(uuid.getTime).setLow(uuid.getClockSeqAndNode)
@@ -56,6 +47,7 @@ object Serialisation {
     builder.build()
   }
 
+  def deserializeClientId(deviceAddress: DeviceAddress) = ClientId(deviceAddress.getDeviceID, deviceAddress.getAppId)
 
   private def toRemoteActorRefProtocol(actor: ActorRef): RemoteActorRefProtocol = actor match {
     case localActor: LocalActorRef ⇒
