@@ -85,7 +85,7 @@ object NettyRemoteServer {
           0,
           60, TimeUnit.SECONDS));
 
-      val serverHandler = new RemoteServerHandler(channels, actorRegistry)
+      val serverHandler = new RemoteServerHandler(channels, new WireMessageDispatcher(actorRegistry))
       val stages: List[ChannelHandler]
       = lenDec :: protobufDec :: lenPrep :: protobufEnc :: executor :: serverHandler :: Nil
       new StaticChannelPipeline(stages: _*)

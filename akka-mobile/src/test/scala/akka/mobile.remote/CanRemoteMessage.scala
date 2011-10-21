@@ -49,7 +49,9 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       AkkaMobileProtocol.newBuilder().setMessage(msg).build().writeDelimitedTo(socket.out);
 
 
-      val restoredMsg = RemoteMessaging(a => socket).channelFor(new InetSocketAddress("localhost", 8080)).receive();
+      val restoredMsg = RemoteMessaging(a => socket)
+        .channelFor(new InetSocketAddress("localhost", 8080))
+        .receive();
       shouldBeEqual(restoredMsg, msg)
     }
   }

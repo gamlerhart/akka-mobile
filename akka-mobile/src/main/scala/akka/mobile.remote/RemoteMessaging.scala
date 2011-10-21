@@ -12,12 +12,35 @@ import akka.mobile.protocol.MobileProtocol.{AkkaMobileProtocol, MobileMessagePro
 class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) {
   private val messangers = scala.collection.mutable.Map[InetSocketAddress, RemoteMessageChannel]()
 
+
   def channelFor(address: InetSocketAddress): RemoteMessageChannel = {
     messangers.synchronized {
-      messangers.getOrElseUpdate(address, RemoteMessageChannel(address, socketFactory))
+      messangers.getOrElseUpdate(address, startRemoteChannel(address))
     }
   }
 
+  private def startRemoteChannel(address: InetSocketAddress): RemoteMessageChannel = {
+    val remoteChannel = RemoteMessageChannel(address, socketFactory)
+    new NewMessagePoller(remoteChannel, new WireMessageDispatcher(new ActorRegistry())).start();
+    return remoteChannel;
+  }
+
+
+}
+
+class NewMessagePoller(rx: RemoteMessageChannel, dispatcher: WireMessageDispatcher) {
+  def start() {
+    val codeToRun = new Runnable {
+      def run() {
+        val msg = rx.receive()
+        dispatcher.dispatchToActor(msg, None)
+      }
+    }
+    val messageReceiver = new Thread(codeToRun, "Message receiver")
+    messageReceiver.setDaemon(true)
+    messageReceiver.setPriority(Thread.NORM_PRIORITY - 1)
+    messageReceiver.start()
+  }
 }
 
 object RemoteMessaging {
@@ -57,7 +80,7 @@ class TCPSocket(addr: InetSocketAddress) extends SocketRepresentation {
     val s = new Socket()
     s.setKeepAlive(true)
     s.setTcpNoDelay(true)
-    s.setSoTimeout(1000)
+    s.setSoTimeout(5000)
     s.connect(addr)
     s
   }

@@ -15,7 +15,7 @@ import org.jboss.netty.channel.{Channel => NettyChannel}
  */
 
 @ChannelHandler.Sharable
-class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
+class RemoteServerHandler(channels: ChannelGroup, wireMessageDispatcher: WireMessageDispatcher)
   extends SimpleChannelUpstreamHandler with MessageSink {
   private val clientChannels = new ConcurrentHashMap[ClientId, NettyChannel]()
 
@@ -54,24 +54,10 @@ class RemoteServerHandler(channels: ChannelGroup, actorRegistry: ActorRegistry)
     })
 
     message.getActorInfo.getActorType match {
-      case SCALA_ACTOR ⇒ dispatchToActor(message, sender)
+      case SCALA_ACTOR ⇒ wireMessageDispatcher.dispatchToActor(message, sender)
       case TYPED_ACTOR ⇒ throw new IllegalActorStateException("ActorType TYPED_ACTOR is currently not supported")
       case JAVA_ACTOR ⇒ throw new IllegalActorStateException("ActorType JAVA_ACTOR is currently not supported")
       case other ⇒ throw new IllegalActorStateException("Unknown ActorType [" + other + "]")
-    }
-  }
-
-  private def dispatchToActor(message: MobileMessageProtocol, sender: Option[ActorRef]) {
-    val actorInfo = message.getActorInfo
-    val actor = actorRegistry.findActorById(actorInfo.getId)
-
-
-    val msgForActor = Serialisation.deSerializeMsg(message.getMessage);
-
-    if (message.getOneWay) {
-      actor.postMessageToMailbox(msgForActor, sender)
-    } else {
-      throw new Error("Not yet implemented")
     }
   }
 
