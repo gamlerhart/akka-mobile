@@ -3,15 +3,14 @@ package akka.mobile.remote
 import java.lang.IllegalStateException
 import org.jboss.netty.bootstrap.ServerBootstrap
 import java.net.InetSocketAddress
-import org.jboss.netty.channel.group.ChannelGroup
 import akka.remote.netty.DefaultDisposableChannelGroup
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import org.jboss.netty.handler.execution.{OrderedMemoryAwareThreadPoolExecutor, ExecutionHandler}
-import java.util.concurrent.{TimeUnit, ThreadFactory, Executors}
+import java.util.concurrent.{TimeUnit, Executors}
 import org.jboss.netty.channel._
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import akka.actor.ActorRef
-import akka.remote.RemoteServerSettings
+import group.ChannelGroup
 import org.jboss.netty.handler.codec.protobuf.{ProtobufVarint32LengthFieldPrepender, ProtobufVarint32FrameDecoder, ProtobufEncoder, ProtobufDecoder}
 
 /**
@@ -28,11 +27,11 @@ object NettyRemoteServer {
     @volatile var isAlive = true
     val name = "NettyRemoteServer@" + hostName + ":" + portNumber
 
-    private val threadPool = newNamedPool(name)
-    private val bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(threadPool, threadPool))
+    private val bootstrap = new ServerBootstrap(
+      new NioServerSocketChannelFactory(Executors.newCachedThreadPool, Executors.newCachedThreadPool))
     private val openChannels: ChannelGroup = new DefaultDisposableChannelGroup("akka--mobile-server")
     bootstrap.setPipelineFactory(new MobileServerPipelineFactory(openChannels, actorRegistry))
-    bootstrap.setOption("backlog", RemoteServerSettings.BACKLOG)
+    bootstrap.setOption("backlog", 1024)
     bootstrap.setOption("child.tcpNoDelay", true)
     bootstrap.setOption("child.keepAlive", true)
 
@@ -47,6 +46,7 @@ object NettyRemoteServer {
 
     def shutdownServerModule() {
       isAlive = false;
+      openChannels.disconnect()
       openChannels.close()
       bootstrap.releaseExternalResources()
     }
@@ -58,15 +58,6 @@ object NettyRemoteServer {
       }
     }
 
-    private def newNamedPool(name: String) =
-      Executors.newCachedThreadPool(new ThreadFactory {
-        def newThread(r: Runnable) = {
-          val thread = Executors.defaultThreadFactory().newThread(r);
-          thread.setName(thread.getName + " for " + name)
-          thread.setDaemon(true)
-          thread
-        }
-      })
 
   }
 

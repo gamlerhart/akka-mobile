@@ -1,12 +1,11 @@
 package akka.mobile.remote
 
 import org.jboss.netty.channel.group.ChannelGroup
-import org.jboss.netty.channel.{MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler}
 import akka.mobile.protocol.MobileProtocol.ActorType._
 import akka.mobile.protocol.MobileProtocol.{AddressType, RemoteActorRefProtocol, MobileMessageProtocol, AkkaMobileProtocol}
 import java.util.concurrent.ConcurrentHashMap
 import akka.actor.{ActorRef, IllegalActorStateException}
-import org.jboss.netty.channel.{Channel => NettyChannel}
+import org.jboss.netty.channel.{ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
 
 /**
  *
@@ -29,6 +28,8 @@ class RemoteServerHandler(channels: ChannelGroup, wireMessageDispatcher: WireMes
       }
     }
   }
+
+  override def channelOpen(ctx: ChannelHandlerContext, event: ChannelStateEvent) = channels.add(ctx.getChannel)
 
 
   def send(clientId: ClientId, serviceId: String, message: Any, sender: Option[ActorRef]) {

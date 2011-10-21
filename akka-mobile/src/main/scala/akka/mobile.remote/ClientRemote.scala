@@ -34,7 +34,7 @@ class ClientRemote(messaging: RemoteMessaging) extends RemoteSupport with Remote
 
   def registerPerSession(id: String, factory: => ActorRef) = notImplemented
 
-  def unregister(actorRef: ActorRef) = notImplemented
+  def unregister(actorRef: ActorRef) = {}
 
   def unregister(id: String) = notImplemented
 
@@ -69,7 +69,8 @@ class ClientRemote(messaging: RemoteMessaging) extends RemoteSupport with Remote
               typedActorInfo: Option[(String, String)],
               actorType: ActorType,
               loader: Option[ClassLoader]): Option[CompletableFuture[T]] = {
-    messaging.channelFor(remoteAddress).send(Serialisation.oneWayMessageToActor(actorRef.id, senderOption, message));
+    messaging.channelFor(remoteAddress)
+      .send(Serialisation.oneWayMessageToActor(actorRef.id, senderOption, message), senderOption);
     None
   }
 

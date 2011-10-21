@@ -3,6 +3,7 @@ package akka.mobile.remote
 import java.net.{Socket, InetSocketAddress}
 import java.io.{OutputStream, InputStream}
 import akka.mobile.protocol.MobileProtocol.{AkkaMobileProtocol, MobileMessageProtocol}
+import akka.actor.ActorRef
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -15,14 +16,8 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) 
 
   def channelFor(address: InetSocketAddress): RemoteMessageChannel = {
     messangers.synchronized {
-      messangers.getOrElseUpdate(address, startRemoteChannel(address))
+      messangers.getOrElseUpdate(address, RemoteMessageChannel(address, socketFactory))
     }
-  }
-
-  private def startRemoteChannel(address: InetSocketAddress): RemoteMessageChannel = {
-    val remoteChannel = RemoteMessageChannel(address, socketFactory)
-    new NewMessagePoller(remoteChannel, new WireMessageDispatcher(new ActorRegistry())).start();
-    return remoteChannel;
   }
 
 
@@ -52,10 +47,14 @@ object RemoteMessaging {
 }
 
 
-case class RemoteMessageChannel(address: InetSocketAddress, socketFactory: InetSocketAddress => SocketRepresentation) {
-  val socket = socketFactory(address)
+case class RemoteMessageChannel(address: InetSocketAddress,
+                                socketFactory: InetSocketAddress => SocketRepresentation) {
+  private val socket = socketFactory(address)
+  private val actorRegistry = new ActorRegistry
+  new NewMessagePoller(this, new WireMessageDispatcher(actorRegistry)).start();
 
-  def send(msg: MobileMessageProtocol) {
+  def send(msg: MobileMessageProtocol, senderOption: Option[ActorRef] = None) {
+    senderOption.foreach(ar => actorRegistry.registerActor("uuid:" + ar.getUuid().toString, ar))
     Serialisation.toWireProtocol(msg).writeDelimitedTo(socket.out)
     socket.out.flush()
   }
