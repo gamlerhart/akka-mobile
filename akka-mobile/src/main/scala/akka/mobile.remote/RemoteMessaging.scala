@@ -1,8 +1,8 @@
 package akka.mobile.remote
 
-import akka.mobile.protocol.MobileProtocol.MobileMessageProtocol
 import java.net.{Socket, InetSocketAddress}
 import java.io.{OutputStream, InputStream}
+import akka.mobile.protocol.MobileProtocol.{AkkaMobileProtocol, MobileMessageProtocol}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -38,7 +38,7 @@ case class RemoteMessageChannel(address: InetSocketAddress, socketFactory: InetS
   }
 
   def receive(): MobileMessageProtocol = {
-    return null;
+    AkkaMobileProtocol.parseDelimitedFrom(socket.in).getMessage();
   }
 
 }

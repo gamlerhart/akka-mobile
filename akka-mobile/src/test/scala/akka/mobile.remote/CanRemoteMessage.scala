@@ -6,6 +6,7 @@ import java.net.InetSocketAddress
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 import com.eaio.uuid.UUID
 import akka.mobile.protocol.MobileProtocol._
+import akka.mobile.protocol.MobileProtocol
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -26,8 +27,9 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       val msg = buildMockMsg()
       msgChannel.send(msg)
 
-      val restoredMsg = AkkaMobileProtocol.parseDelimitedFrom(socket.asInputStreamFrom(9)).getMessage
-      restoredMsg should be eq (msg)
+      val restoredMsg = AkkaMobileProtocol.parseDelimitedFrom(socket.asInputStreamFrom(0)).getMessage
+
+      shouldBeEqual(restoredMsg, msg)
     }
     it("opens socket once") {
       val socket = new MockSocket()
@@ -48,8 +50,15 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
 
 
       val restoredMsg = RemoteMessaging(a => socket).channelFor(new InetSocketAddress("localhost", 8080)).receive();
-      restoredMsg should be eq (msg)
+      shouldBeEqual(restoredMsg, msg)
     }
+  }
+
+  private def shouldBeEqual(restoredMsg: MobileProtocol.MobileMessageProtocol, msg: MobileProtocol.MobileMessageProtocol) {
+    restoredMsg.getActorInfo.getId should be(msg.getActorInfo.getId)
+    restoredMsg.getActorInfo.getActorType should be(msg.getActorInfo.getActorType)
+    restoredMsg.getUuid.getHigh should be(msg.getUuid.getHigh)
+    restoredMsg.getUuid.getLow should be(msg.getUuid.getLow)
   }
 
 
