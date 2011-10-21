@@ -6,14 +6,13 @@ import java.net.InetSocketAddress
 import org.jboss.netty.channel.group.ChannelGroup
 import akka.remote.netty.DefaultDisposableChannelGroup
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
-import org.jboss.netty.handler.codec.frame.{LengthFieldPrepender, LengthFieldBasedFrameDecoder}
-import org.jboss.netty.handler.codec.protobuf.{ProtobufEncoder, ProtobufDecoder}
 import org.jboss.netty.handler.execution.{OrderedMemoryAwareThreadPoolExecutor, ExecutionHandler}
 import java.util.concurrent.{TimeUnit, ThreadFactory, Executors}
 import org.jboss.netty.channel._
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import akka.actor.ActorRef
 import akka.remote.RemoteServerSettings
+import org.jboss.netty.handler.codec.protobuf.{ProtobufVarint32LengthFieldPrepender, ProtobufVarint32FrameDecoder, ProtobufEncoder, ProtobufDecoder}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -73,8 +72,8 @@ object NettyRemoteServer {
 
   class MobileServerPipelineFactory(channels: ChannelGroup, actorRegistry: ActorRegistry) extends ChannelPipelineFactory {
     def getPipeline = {
-      val lenDec = new LengthFieldBasedFrameDecoder(1024, 0, 4, 0, 4)
-      val lenPrep = new LengthFieldPrepender(4)
+      val lenDec = new ProtobufVarint32FrameDecoder()
+      val lenPrep = new ProtobufVarint32LengthFieldPrepender()
       val protobufDec = new ProtobufDecoder(AkkaMobileProtocol.getDefaultInstance)
       val protobufEnc = new ProtobufEncoder
 

@@ -18,7 +18,6 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) 
     }
   }
 
-
 }
 
 object RemoteMessaging {
@@ -34,18 +33,13 @@ case class RemoteMessageChannel(address: InetSocketAddress, socketFactory: InetS
   val socket = socketFactory(address)
 
   def send(msg: MobileMessageProtocol) {
-    val size = Serialisation.toWireProtocol(msg).getSerializedSize
-    socket.out.write(intToByteArray(size))
-    Serialisation.toWireProtocol(msg).writeTo(socket.out)
+    Serialisation.toWireProtocol(msg).writeDelimitedTo(socket.out)
     socket.out.flush()
   }
 
-  private def intToByteArray(value: Int) =
-    Array(
-      (value >>> 24).asInstanceOf[Byte],
-      (value >>> 16).asInstanceOf[Byte],
-      (value >>> 8).asInstanceOf[Byte],
-      value.asInstanceOf[Byte])
+  def receive(): MobileMessageProtocol = {
+    return null;
+  }
 
 }
 

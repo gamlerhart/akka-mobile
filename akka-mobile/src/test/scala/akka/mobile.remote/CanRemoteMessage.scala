@@ -26,7 +26,7 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       val msg = buildMockMsg()
       msgChannel.send(msg)
 
-      val restoredMsg = AkkaMobileProtocol.parseFrom(socket.asInputStreamFrom(4)).getMessage
+      val restoredMsg = AkkaMobileProtocol.parseDelimitedFrom(socket.asInputStreamFrom(9)).getMessage
       restoredMsg should be eq (msg)
     }
     it("opens socket once") {
@@ -40,6 +40,15 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       channelFactory.channelFor(new InetSocketAddress("localhost", 8080))
 
       callCounter should be(1)
+    }
+    it("receives message") {
+      val socket = new MockSocket()
+      val msg = buildMockMsg();
+      AkkaMobileProtocol.newBuilder().setMessage(msg).build().writeDelimitedTo(socket.out);
+
+
+      val restoredMsg = RemoteMessaging(a => socket).channelFor(new InetSocketAddress("localhost", 8080)).receive();
+      restoredMsg should be eq (msg)
     }
   }
 
@@ -67,7 +76,7 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
 class MockSocket() extends SocketRepresentation {
   val outBuffer = new ByteArrayOutputStream()
 
-  def in = throw new Error("Not implemented")
+  def in = new ByteArrayInputStream(outBuffer.toByteArray)
 
   def out = outBuffer
 
