@@ -29,6 +29,18 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       val restoredMsg = AkkaMobileProtocol.parseFrom(socket.asInputStreamFrom(4)).getMessage
       restoredMsg should be eq (msg)
     }
+    it("opens socket once") {
+      val socket = new MockSocket()
+      var callCounter = 0;
+      val channelFactory = RemoteMessaging(a => {
+        callCounter += 1
+        socket
+      })
+      channelFactory.channelFor(new InetSocketAddress("localhost", 8080))
+      channelFactory.channelFor(new InetSocketAddress("localhost", 8080))
+
+      callCounter should be(1)
+    }
   }
 
 
