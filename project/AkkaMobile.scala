@@ -48,7 +48,7 @@ object MyBuild extends Build {
     // compile options
     scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked") ++ (
       if (true || (System getProperty "java.runtime.version" startsWith "1.7")) Seq() else Seq("-optimize")), // -optimize fails with jdk7
-    javacOptions ++= Seq("-Xlint:deprecation"),
+    javacOptions ++= Seq("-source","1.6","-target","1.6","-Xlint:deprecation"),
     // show full stack traces
     testOptions in Test += Tests.Argument("-oF")
   )

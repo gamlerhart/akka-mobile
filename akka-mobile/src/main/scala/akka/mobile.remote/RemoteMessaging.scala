@@ -80,7 +80,7 @@ class TCPSocket(addr: InetSocketAddress) extends SocketRepresentation {
     s.setKeepAlive(true)
     s.setTcpNoDelay(true)
     s.setSoTimeout(5000)
-    s.connect(addr)
+    s.connect(addr,5000)
     s
   }
 
