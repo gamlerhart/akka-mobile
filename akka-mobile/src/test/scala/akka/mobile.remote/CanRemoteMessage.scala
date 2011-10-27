@@ -2,10 +2,11 @@ package akka.mobile.remote
 
 import org.scalatest.Spec
 import org.scalatest.matchers.ShouldMatchers
-import java.net.{ServerSocket, InetSocketAddress}
+import java.net.InetSocketAddress
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 import com.eaio.uuid.UUID
 import akka.mobile.protocol.MobileProtocol._
+import akka.mobile.protocol.MobileProtocol
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -13,7 +14,7 @@ import akka.mobile.protocol.MobileProtocol._
  */
 
 class CanRemoteMessage extends Spec with ShouldMatchers {
-  val toTest = RemoteMessaging(a=>new MockSocket())
+  val toTest = RemoteMessaging(a => new MockSocket())
 
   describe("Remote Messaging") {
     it("can get message channel for host and port") {
@@ -26,9 +27,40 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       val msg = buildMockMsg()
       msgChannel.send(msg)
 
-      val restoredMsg = AkkaMobileProtocol.parseFrom(socket.asInputStreamFrom(4)).getMessage
-      restoredMsg should be eq (msg)
+      val restoredMsg = AkkaMobileProtocol.parseDelimitedFrom(socket.asInputStreamFrom(0)).getMessage
+
+      shouldBeEqual(restoredMsg, msg)
     }
+    it("opens socket once") {
+      val socket = new MockSocket()
+      var callCounter = 0;
+      val channelFactory = RemoteMessaging(a => {
+        callCounter += 1
+        socket
+      })
+      channelFactory.channelFor(new InetSocketAddress("localhost", 8080))
+      channelFactory.channelFor(new InetSocketAddress("localhost", 8080))
+
+      callCounter should be(1)
+    }
+    it("receives message") {
+      val socket = new MockSocket()
+      val msg = buildMockMsg();
+      AkkaMobileProtocol.newBuilder().setMessage(msg).build().writeDelimitedTo(socket.out);
+
+
+      val restoredMsg = RemoteMessaging(a => socket)
+        .channelFor(new InetSocketAddress("localhost", 8080))
+        .receive();
+      shouldBeEqual(restoredMsg, msg)
+    }
+  }
+
+  private def shouldBeEqual(restoredMsg: MobileProtocol.MobileMessageProtocol, msg: MobileProtocol.MobileMessageProtocol) {
+    restoredMsg.getActorInfo.getId should be(msg.getActorInfo.getId)
+    restoredMsg.getActorInfo.getActorType should be(msg.getActorInfo.getActorType)
+    restoredMsg.getUuid.getHigh should be(msg.getUuid.getHigh)
+    restoredMsg.getUuid.getLow should be(msg.getUuid.getLow)
   }
 
 
@@ -41,13 +73,11 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
       .setUuid(newUUID())
       .setOneWay(true)
       .setActorInfo({
-          ActorInfoProtocol.newBuilder()
-            .setActorType(ActorType.SCALA_ACTOR)
-            .setUuid(newUUID())
-            .setId("remote-actor")
-            .setTarget("a.class.name")
-            .setTimeout(1000)
-        })
+      ActorInfoProtocol.newBuilder()
+        .setActorType(ActorType.SCALA_ACTOR)
+        .setId("remote-actor")
+        .setTarget("a.class.name")
+    })
       .build()
   }
 
@@ -57,11 +87,11 @@ class CanRemoteMessage extends Spec with ShouldMatchers {
 class MockSocket() extends SocketRepresentation {
   val outBuffer = new ByteArrayOutputStream()
 
-  def in = throw new Error("Not implemented")
+  def in = new ByteArrayInputStream(outBuffer.toByteArray)
 
   def out = outBuffer
 
   def close() = outBuffer.close()
 
-  def asInputStreamFrom(startLocation:Int) = new ByteArrayInputStream(outBuffer.toByteArray.drop(startLocation))
+  def asInputStreamFrom(startLocation: Int) = new ByteArrayInputStream(outBuffer.toByteArray.drop(startLocation))
 }

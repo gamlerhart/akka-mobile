@@ -1,12 +1,12 @@
 package info.gamlor.remoting
 
-import org.scalatest.{WordSpec, Spec}
+import org.scalatest.WordSpec
 import akka.testkit.TestKit
 import akka.actor.Actor
 import TestServer._
-import java.util.concurrent.{TimeUnit, CountDownLatch}
-import org.scalatest.matchers.{ShouldMatchers, MustMatchers}
-import org.scalatest.matchers.ShouldMatchers._
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import org.scalatest.matchers.ShouldMatchers
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -28,8 +28,8 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
         echo ! "Hello-Receive-Only"
 
 
-        val receivedMsg = barrier.await(6,TimeUnit.SECONDS)
-        receivedMsg should be( true )
+        val receivedMsg = barrier.await(6, TimeUnit.SECONDS)
+        receivedMsg should be(true)
       })
     }
 
@@ -50,14 +50,14 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
 
 }
 
-class ReceiveCheckActor(barrier : Option[CountDownLatch] = null) extends Actor {
+class ReceiveCheckActor(barrier: Option[CountDownLatch] = null) extends Actor {
   protected def receive = {
 
     case "Hello-Receive-Only" => {
       barrier.get.countDown()
     }
     case x: String => {
-      self.reply("Answer for "+x)
+      self.reply("Answer for " + x)
     }
 
   }

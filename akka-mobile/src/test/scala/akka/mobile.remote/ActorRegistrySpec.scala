@@ -1,7 +1,6 @@
 package akka.mobile.remote
 
 import org.scalatest.Spec
-import akka.testkit.TestActorRef
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.Actor
 
