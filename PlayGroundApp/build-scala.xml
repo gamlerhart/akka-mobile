@@ -64,10 +64,10 @@
     <target name="-post-compile-scala" depends="compile-scala" unless="do.not.compile"
             description="Shrink project class files and Scala library into one .jar file">
         <condition property="debug.mode" value="" else="#DEBUG#">
-            <isset property="build.mode.debug"/>
+             <equals arg1="${build.target}" arg2="debug"/>
         </condition>
         <condition property="release.mode" value="" else="#RELEASE#">
-            <isset property="build.mode.release"/>
+             <equals arg1="${build.target}" arg2="release"/>
         </condition>
         <!-- priority is given to local ProGuard configuration if present -->
         <condition property="template.cfg" value="${basedir}/local-proguard-template.cfg">

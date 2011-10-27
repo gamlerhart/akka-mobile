@@ -89,7 +89,7 @@
 
 
     <target name="debug-install" depends="debug">
-        <copy file="./bin/AkkaDroidApp-debug.apk" tofile="./out/production\AkkaDroidApp\AkkaDroidApp.apk"/>
+        <copy file="./bin/AkkaDroidApp-debug.apk" tofile="./out/production/PlayGroundApp/PlayGroundApp.apk"/>
     </target>
 
 </project>
