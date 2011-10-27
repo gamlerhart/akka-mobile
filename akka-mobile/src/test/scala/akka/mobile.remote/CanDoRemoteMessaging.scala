@@ -4,8 +4,7 @@ import org.scalatest.Spec
 import org.scalatest.matchers.ShouldMatchers
 import java.net.InetSocketAddress
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
-import java.lang.ProcessImpl
-import java.io.{PipedOutputStream, PipedInputStream}
+import java.io._
 
 /**
  * @author roman.stoffel@gamlor.info

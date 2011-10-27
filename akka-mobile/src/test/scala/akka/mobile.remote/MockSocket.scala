@@ -1,6 +1,6 @@
 package akka.mobile.remote
 
-import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
+import java.io.{OutputStream, ByteArrayOutputStream, ByteArrayInputStream}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -12,7 +12,7 @@ class MockSocket() extends SocketRepresentation {
 
   def in = new ByteArrayInputStream(outBuffer.toByteArray)
 
-  def out = outBuffer
+  def out: OutputStream = outBuffer
 
   def close() {
     outBuffer.close()

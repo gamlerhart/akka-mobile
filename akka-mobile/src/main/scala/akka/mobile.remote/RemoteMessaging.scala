@@ -1,8 +1,9 @@
 package akka.mobile.remote
 
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
-import akka.actor.{ActorRef, Actor}
 import java.net.InetSocketAddress
+import java.io.IOException
+import akka.actor.{Restart, ActorRef, Actor}
 
 
 /**
@@ -44,12 +45,18 @@ object RemoteMessaging {
  * Since remote messaging over very unreliable channels is difficult to manage,
  * we want to encapsulate the state-changes into an actor.
  */
-class RemoteMessagingActor(channelFactory: () => RemoteMessageChannel) extends Actor {
-  private val channel = channelFactory()
-
+class RemoteMessagingActor(channel: RemoteMessageChannel) extends Actor {
   protected def receive = {
     case SendMessage(msg, sender) => {
-      channel.send(msg)
+      try {
+        channel.send(msg)
+      } catch {
+        case x: IOException => {
+          channel.close()
+          self.channel ! SendingFailed(x, SendMessage(msg, sender))
+          self ! Restart(x)
+        }
+      }
     }
   }
 }
@@ -57,3 +64,5 @@ class RemoteMessagingActor(channelFactory: () => RemoteMessageChannel) extends A
 trait RemoteMessage
 
 case class SendMessage(msg: AkkaMobileProtocol, sender: Option[ActorRef]) extends RemoteMessage
+
+case class SendingFailed(exception: Exception, orignalMessage: SendMessage) extends RemoteMessage
