@@ -5,26 +5,32 @@ import org.scalatest.matchers.ShouldMatchers
 import java.net.InetSocketAddress
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import java.io._
+import java.util.concurrent.atomic.AtomicInteger
+import akka.testkit.TestKit
+import akka.util.Duration
 
 /**
  * @author roman.stoffel@gamlor.info
  * @since 27.10.11
  */
 
-class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssageProducer {
+class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssageProducer with TestKit {
 
   describe("The remote actors factor") {
     it("opens a socket only once") {
       val socket = new MockSocket()
-      var callCounter = 0;
+      var callCounter = new AtomicInteger();
       val channelFactory = RemoteMessaging(a => {
-        callCounter += 1
+        callCounter.incrementAndGet()
         socket
       })
-      channelFactory.channelFor(new InetSocketAddress("localhost", 8080))
-      channelFactory.channelFor(new InetSocketAddress("localhost", 8080))
+      channelFactory.channelFor(new InetSocketAddress("localhost", 8080)) ! SendMessage(buildMockMsg(), None)
+      channelFactory.channelFor(new InetSocketAddress("localhost", 8080)) ! SendMessage(buildMockMsg(), None)
 
-      callCounter should be(1)
+      receiveOne(Duration.Inf)
+      receiveOne(Duration.Inf)
+
+      callCounter.get() should be(1)
     }
   }
   describe("The remote actor") {
