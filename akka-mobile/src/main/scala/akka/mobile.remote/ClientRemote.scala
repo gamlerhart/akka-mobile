@@ -12,6 +12,8 @@ import java.net.InetSocketAddress
 
 class ClientRemote(messaging: RemoteMessaging) extends RemoteSupport with RemoteClientModule {
 
+  import akka.mobile.remote.Serialisation._
+
   def this() = this (RemoteMessaging())
 
   def registerTypedActor(id: String, typedActor: AnyRef) {}
@@ -69,8 +71,9 @@ class ClientRemote(messaging: RemoteMessaging) extends RemoteSupport with Remote
               typedActorInfo: Option[(String, String)],
               actorType: ActorType,
               loader: Option[ClassLoader]): Option[CompletableFuture[T]] = {
-    messaging.channelFor(remoteAddress)
-      .send(Serialisation.oneWayMessageToActor(actorRef.id, senderOption, message), senderOption);
+    var msg = toWireProtocol(oneWayMessageToActor(actorRef.id, senderOption, message))
+    val remoteChannel = messaging.channelFor(remoteAddress)
+    remoteChannel ! SendMessage(msg, senderOption)
     None
   }
 

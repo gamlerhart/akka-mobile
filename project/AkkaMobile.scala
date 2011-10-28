@@ -17,26 +17,28 @@ object MyBuild extends Build {
   lazy val akkamobile: Project = Project(
     id = "akka-mobile",
     base = file("./akka-mobile"),
-    settings = defaultSettings ++ Seq(	
-      unmanagedBase <<= baseDirectory { base => base / "lib" },
-      libraryDependencies ++= Seq(akkaActors, scalaTest)
+    settings = defaultSettings ++ Seq(
+      unmanagedBase <<= baseDirectory {
+        base => base / "lib"
+      },
+      libraryDependencies ++= Seq(akkaActors, scalaTest, akkaTestKit)
     ))
-	
+
   lazy val akkamobileServer: Project = Project(
     id = "akka-mobile-server",
     base = file("./akka-mobile-server"),
     dependencies = Seq(akkamobile),
-    settings = defaultSettings ++ Seq(	
-      libraryDependencies ++= Seq(akkaActors,akkaRemoteActors,netty, scalaTest, akkaTestKit)
+    settings = defaultSettings ++ Seq(
+      libraryDependencies ++= Seq(akkaActors, akkaRemoteActors, netty, scalaTest, akkaTestKit)
     )
   )
-	
+
   lazy val akkamobileTest: Project = Project(
     id = "akka-mobile-test",
     base = file("./akka-mobile-test"),
-    dependencies = Seq(akkamobile,akkamobileServer),
+    dependencies = Seq(akkamobile, akkamobileServer),
     settings = defaultSettings ++ Seq(
-      libraryDependencies ++= Seq(akkaActors,netty, scalaTest, akkaTestKit)
+      libraryDependencies ++= Seq(akkaActors, netty, scalaTest, akkaTestKit)
     ))
 
 
@@ -48,7 +50,7 @@ object MyBuild extends Build {
     // compile options
     scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked") ++ (
       if (true || (System getProperty "java.runtime.version" startsWith "1.7")) Seq() else Seq("-optimize")), // -optimize fails with jdk7
-    javacOptions ++= Seq("-source","1.6","-target","1.6","-Xlint:deprecation"),
+    javacOptions ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint:deprecation"),
     // show full stack traces
     testOptions in Test += Tests.Argument("-oF")
   )
@@ -59,8 +61,8 @@ object MyBuild extends Build {
 object Dependencies {
 
   val scalaTest = "org.scalatest" %% "scalatest" % "1.6.1" % "test"
-  val netty         = "org.jboss.netty"             % "netty"   % "3.2.5.Final"  
-  
+  val netty = "org.jboss.netty" % "netty" % "3.2.5.Final"
+
   val akkaTestKit = "se.scalablesolutions.akka" % "akka-testkit" % "1.2" % "test"
   val akkaActors = "se.scalablesolutions.akka" % "akka-actor" % "1.2"
   val akkaRemoteActors = "se.scalablesolutions.akka" % "akka-remote" % "1.2"
