@@ -1,5 +1,8 @@
 package info.gamlor.remoting
 
+import org.scalatest.Spec
+import akka.config.Supervision.OneForOneStrategy
+import akka.actor.Actor
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -20,38 +23,48 @@ package info.gamlor.remoting
 //  }
 //}
 //
-//class PlayAround extends Spec{
-//
-//
-//  describe("Test Server") {
-//    it("dum di dum"){
-//      val server = new ServerSocket(8989);
-//      val t = new Thread(){
-//        override def run() {
-//          val s: Socket = server.accept()
-//          s.getInputStream;
-//          while(true){
-//            println("Av"+s.getInputStream.available())
-//            Thread.`yield`()
-//          }
-//        }
-//      }
-//      t.start()
-//      val s = new Socket();
-//      s.connect(new InetSocketAddress("localhost",8989));
-//
-//      try{
-//      while(true){
-//      s.getOutputStream.write(2)
-//        s.getOutputStream.flush()
-//
-//      }}catch{
-//        case e:Exception=>{
-//          e.printStackTrace()
-//        }
-//      }
-//    }}
+class PlayAround extends Spec {
 
-//}
+  class KilledMyselfException extends Exception
+
+  describe("Test Server") {
+    it("dum di dum") {
+
+
+      val neverDone = Actor.actorOf(new Actor() {
+        self.faultHandler = OneForOneStrategy(List(classOf[Exception]), 1, 5000)
+
+        override def preStart() {
+          println("start")
+        }
+
+        override def preRestart(reason: Throwable, message: Option[Any]) {
+          println("restart")
+        }
+
+        protected def receive = {
+          case "FirstMsg" => {
+            Thread.sleep(7000)
+          }
+          case "Fail" => {
+            println("Super-visor?" + self.supervisor.isDefined)
+            throw new KilledMyselfException()
+          }
+          case "Fun" => println("Fun yeah")
+          case "Fun 2" => println("Fun yeah2")
+        }
+      }).start()
+
+      neverDone ! "Fail"
+      neverDone ! "Fail"
+      neverDone ! "Fail"
+      neverDone ! "Fail"
+      neverDone ! "Fun"
+      neverDone ! "EndMe"
+      neverDone ! "Fun 2"
+    }
+  }
+
+}
 
 
