@@ -6,6 +6,9 @@ import org.scalatest.matchers.ShouldMatchers
 import actors.threadpool.AtomicInteger
 import akka.actor.{Supervisor, Actor}
 import akka.config.Supervision.{Permanent, Supervise, OneForOneStrategy, SupervisorConfig}
+import java.util.concurrent.{TimeUnit, CountDownLatch}
+import java.io.Closeable
+import java.lang.Exception
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -50,6 +53,37 @@ class ResourceInitializeActorSpec extends Spec with ShouldMatchers with TestKit 
 
       toTest.ask(ResourceInitializeActor.GetResource).get should be(2)
       toTest.ask(ResourceInitializeActor.GetResource).get should be(2)
+    }
+    it("closes the resource when stopped") {
+      val closedOldChannel = new CountDownLatch(1);
+      val closable = new Closeable {
+        def close() {
+          closedOldChannel.countDown()
+        }
+      }
+
+      val toTest = Actor.actorOf(ResourceInitializeActor(() => closable, (c: Closeable) => c.close())).start()
+
+      toTest.ask(ResourceInitializeActor.GetResource).await
+
+      toTest.stop()
+
+      closedOldChannel.await(5, TimeUnit.SECONDS) should be(true)
+    }
+    it("closes the resource when restarted ") {
+      val closedOldChannel = new CountDownLatch(1);
+      val closable = new Closeable {
+        def close() {
+          closedOldChannel.countDown()
+        }
+      }
+      val toTest = Actor.actorOf(ResourceInitializeActor(() => closable, (c: Closeable) => c.close())).start()
+
+      toTest.ask(ResourceInitializeActor.GetResource).await
+
+      toTest.restart(new Exception("restart"), None, None)
+      closedOldChannel.await(5, TimeUnit.SECONDS) should be(true)
+
     }
   }
 

@@ -1,7 +1,6 @@
 package akka.mobile.remote
 
 import akka.mobile.protocol.MobileProtocol.MobileMessageProtocol
-import akka.actor.ActorRef
 import akka.actor.UntypedChannel._
 
 /**
@@ -11,7 +10,7 @@ import akka.actor.UntypedChannel._
 
 class WireMessageDispatcher(private val actorRegistry: ActorRegistry) {
 
-  def dispatchToActor(message: MobileMessageProtocol, sender: Option[ActorRef]) {
+  def dispatchToActor(message: MobileMessageProtocol) {
     val actorInfo = message.getActorInfo
     val actor = actorRegistry.findActorById(actorInfo.getId)
 
@@ -19,7 +18,7 @@ class WireMessageDispatcher(private val actorRegistry: ActorRegistry) {
     val msgForActor = Serialisation.deSerializeMsg(message.getMessage);
 
     if (message.getOneWay) {
-      actor.postMessageToMailbox(msgForActor, sender)
+      actor.postMessageToMailbox(msgForActor, None)
     } else {
       throw new Error("Not yet implemented")
     }

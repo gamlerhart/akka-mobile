@@ -7,16 +7,16 @@ import akka.testkit.TestKit
 import akka.util.Duration
 import akka.config.Supervision.{Permanent, Supervise, SupervisorConfig, OneForOneStrategy}
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{TimeUnit, CountDownLatch}
 import java.io.IOException
 import akka.actor.{ActorRef, Supervisor, Actor}
+import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 /**
  * @author roman.stoffel@gamlor.info
  * @since 27.10.11
  */
 
-class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
+class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit with TestMesssageProducer {
 
   class ThrowOnSend extends RemoteMessageChannel(new MockSocket) {
     override def send(msg: AkkaMobileProtocol) {
@@ -24,10 +24,10 @@ class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
     }
   }
 
-  val msg = SendMessage(null, None);
+  val msg = SendMessage(buildMockMsg(), None);
 
   def newMessageActor(channelFactor: () => RemoteMessageChannel): RemoteMessageSendingActor = {
-    val initializer = Actor.actorOf(new ResourceInitializeActor(channelFactor)).start();
+    val initializer = Actor.actorOf(ResourceInitializeActor(channelFactor)).start();
     new RemoteMessageSendingActor(initializer);
   }
 

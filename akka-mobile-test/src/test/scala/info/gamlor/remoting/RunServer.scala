@@ -45,6 +45,10 @@ class PlayAround extends Spec {
             throw new KilledMyselfException()
           }
         }
+
+        override def postStop() {
+          println("stop")
+        }
       }
 
 

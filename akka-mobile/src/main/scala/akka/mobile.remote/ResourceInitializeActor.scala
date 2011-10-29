@@ -15,7 +15,8 @@ import akka.actor.Actor
  * @author roman.stoffel@gamlor.info
  * @since 29.10.11
  */
-class ResourceInitializeActor[TResource](factory: () => TResource) extends Actor {
+class ResourceInitializeActor[TResource](factory: () => TResource,
+                                         closeAction: Option[TResource => Unit]) extends Actor {
   private var cachedValue: Option[TResource] = None
 
   override def preStart() {
@@ -30,10 +31,30 @@ class ResourceInitializeActor[TResource](factory: () => TResource) extends Actor
       self.reply(cachedValue.get)
     }
   }
+
+
+  override def preRestart(reason: Throwable, message: Option[Any]) {
+    closeResource()
+  }
+
+  override def postStop() {
+    closeResource()
+  }
+
+  def closeResource() {
+    cachedValue.foreach(value => {
+      closeAction.foreach(ca => ca(value))
+    })
+  }
 }
 
 object ResourceInitializeActor {
-  def apply[TResource](factory: () => TResource): ResourceInitializeActor[TResource] = new ResourceInitializeActor(factory)
+  def apply[TResource](factory: () => TResource): ResourceInitializeActor[TResource]
+  = new ResourceInitializeActor(factory, None)
+
+  def apply[TResource](factory: () => TResource,
+                       closeAction: TResource => Unit): ResourceInitializeActor[TResource]
+  = new ResourceInitializeActor(factory, Some(closeAction))
 
   case object GetResource
 
