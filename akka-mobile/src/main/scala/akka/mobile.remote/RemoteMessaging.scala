@@ -3,7 +3,9 @@ package akka.mobile.remote
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import java.net.InetSocketAddress
 import java.io.IOException
-import akka.actor.{ActorRef, Actor}
+import akka.config.Supervision.{Permanent, OneForOneStrategy, SupervisorConfig}
+import akka.dispatch.Dispatchers
+import akka.actor._
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -12,6 +14,9 @@ import akka.actor.{ActorRef, Actor}
 
 class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) {
   private val messangers = scala.collection.mutable.Map[InetSocketAddress, ActorRef]()
+  private val supervisor = Supervisor(SupervisorConfig(
+    OneForOneStrategy(List(classOf[Exception]), 5, 10000), Nil
+  ))
 
   /**
    * Returns the actor which is responsible for remote messaging with the given server
@@ -19,6 +24,7 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) 
    */
   private def newCommunicationActor(address: InetSocketAddress): ActorRef = {
     val actor = Actor.actorOf(new RemoteMessagingActor(() => new RemoteMessageChannel(socketFactory(address))))
+    supervisor.link(actor)
     actor.start()
   }
 
@@ -46,6 +52,7 @@ object RemoteMessaging {
  */
 class RemoteMessagingActor(channelFactory: () => RemoteMessageChannel) extends Actor {
   private var channelOption: Option[RemoteMessageChannel] = None
+  self.lifeCycle = Permanent
 
   override def preStart() {
     channelOption = None
@@ -55,11 +62,11 @@ class RemoteMessagingActor(channelFactory: () => RemoteMessageChannel) extends A
     case SendMessage(msg, sender) => {
       try {
         channel.send(msg)
-        self.channel ! SendingSucceeded(SendMessage(msg, sender))
+        self.channel.tryTell(SendingSucceeded(SendMessage(msg, sender)))
       } catch {
         case x: IOException => {
           channelOption.foreach(_.close())
-          self.channel ! SendingFailed(x, SendMessage(msg, sender))
+          self.channel.tryTell(SendingFailed(x, SendMessage(msg, sender)))
           throw x
         }
       }
@@ -71,6 +78,22 @@ class RemoteMessagingActor(channelFactory: () => RemoteMessageChannel) extends A
       channelOption = Some(channelFactory())
     }
     channelOption.get
+  }
+}
+
+class ReceiveChannelMonitoring(channel: RemoteMessageChannel) extends Actor {
+  self.dispatcher = Dispatchers.newThreadBasedDispatcher(self)
+
+
+  protected def receive = {
+    case "Start" => {
+      try {
+        val msg = channel.receive()
+
+      }
+
+    }
+
   }
 }
 
