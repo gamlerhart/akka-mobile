@@ -26,9 +26,14 @@ class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
 
   val msg = SendMessage(null, None);
 
+  def newMessageActor(channelFactor: () => RemoteMessageChannel): RemoteMessageSendingActor = {
+    val initializer = Actor.actorOf(new ResourceInitializeActor(channelFactor)).start();
+    new RemoteMessageSendingActor(initializer);
+  }
+
   describe("On IOException") {
     it("it reports it back") {
-      val actor = Actor.actorOf(new RemoteMessagingActor(() => new ThrowOnSend())).start()
+      val actor = Actor.actorOf(newMessageActor(() => new ThrowOnSend())).start()
       actor ! msg;
 
       val response = receiveOne(Duration.Inf)
@@ -48,7 +53,7 @@ class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
           closedOldChannel.set(true);
         }
       }
-      val actor = Actor.actorOf(new RemoteMessagingActor(() => {
+      val actor = Actor.actorOf(newMessageActor(() => {
         channel
       }))
 
@@ -64,7 +69,7 @@ class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
     }
 
     it("while opening") {
-      val actor = Actor.actorOf(new RemoteMessagingActor(() => {
+      val actor = Actor.actorOf(newMessageActor(() => {
         throw new IOException()
       }))
 
@@ -76,7 +81,7 @@ class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
 
     it("can send messaged during reopening") {
 
-      val actor = Actor.actorOf(new RemoteMessagingActor(() => new RemoteMessageChannel(new MockSocket) {
+      val actor = Actor.actorOf(newMessageActor(() => new RemoteMessageChannel(new MockSocket) {
         var callCount = 0;
 
         override def send(msg: AkkaMobileProtocol) {

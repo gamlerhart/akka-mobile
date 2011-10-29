@@ -3,9 +3,9 @@ package akka.mobile.remote
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import java.net.InetSocketAddress
 import java.io.IOException
-import akka.config.Supervision.{Permanent, OneForOneStrategy, SupervisorConfig}
 import akka.dispatch.Dispatchers
 import akka.actor._
+import akka.config.Supervision.{AllForOneStrategy, SupervisorConfig}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -15,7 +15,7 @@ import akka.actor._
 class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) {
   private val messangers = scala.collection.mutable.Map[InetSocketAddress, ActorRef]()
   private val supervisor = Supervisor(SupervisorConfig(
-    OneForOneStrategy(List(classOf[Exception]), 5, 10000), Nil
+    AllForOneStrategy(List(classOf[Exception]), 5, 10000), Nil
   ))
 
   /**
@@ -23,9 +23,12 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) 
    * The actor communicates with the messages types of {@link akka.mobile.remote.RemoteMessage}
    */
   private def newCommunicationActor(address: InetSocketAddress): ActorRef = {
-    val actor = Actor.actorOf(new RemoteMessagingActor(() => new RemoteMessageChannel(socketFactory(address))))
-    supervisor.link(actor)
-    actor.start()
+    val socketInitialisation = Actor.actorOf(new ResourceInitializeActor(() => new RemoteMessageChannel(socketFactory(address))))
+    val sendActor = Actor.actorOf(new RemoteMessageSendingActor(socketInitialisation))
+    supervisor.link(socketInitialisation)
+    supervisor.link(sendActor)
+    socketInitialisation.start()
+    sendActor.start()
   }
 
   def channelFor(address: InetSocketAddress): ActorRef = {
@@ -50,34 +53,33 @@ object RemoteMessaging {
  * Since remote messaging over very unreliable channels is difficult to manage,
  * we want to encapsulate the state-changes into an actor.
  */
-class RemoteMessagingActor(channelFactory: () => RemoteMessageChannel) extends Actor {
-  private var channelOption: Option[RemoteMessageChannel] = None
-  self.lifeCycle = Permanent
+class RemoteMessageSendingActor(channelFactory: ActorRef) extends Actor {
 
-  override def preStart() {
-    channelOption = None
-  }
+  import akka.util.duration._
 
   protected def receive = {
     case SendMessage(msg, sender) => {
+      val channel =
+        try {
+          (channelFactory ? ResourceInitializeActor.GetResource)
+            .await(5.seconds).resultOrException.get.asInstanceOf[RemoteMessageChannel]
+        } catch {
+          case e: IOException => {
+            self.channel.tryTell(SendingFailed(e, SendMessage(msg, sender)))(null)
+            throw e
+          }
+        }
       try {
         channel.send(msg)
         self.channel.tryTell(SendingSucceeded(SendMessage(msg, sender)))
       } catch {
-        case x: IOException => {
-          channelOption.foreach(_.close())
-          self.channel.tryTell(SendingFailed(x, SendMessage(msg, sender)))
-          throw x
+        case e: IOException => {
+          channel.close()
+          self.channel.tryTell(SendingFailed(e, SendMessage(msg, sender)))
+          throw e
         }
       }
     }
-  }
-
-  def channel: RemoteMessageChannel = {
-    if (channelOption.isEmpty) {
-      channelOption = Some(channelFactory())
-    }
-    channelOption.get
   }
 }
 

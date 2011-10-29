@@ -8,10 +8,11 @@ import akka.testkit.TestKit
  * @since 29.10.11
  */
 
-class ReceiveMessageActorSpec extends Spec with TestKit {
+class ReceiveMessageActorSpec extends Spec with TestKit with TestMesssageProducer {
 
   describe("Receiver Actor") {
     it("receives message") {
+      val msg = buildMockMsg()
 
     }
 
