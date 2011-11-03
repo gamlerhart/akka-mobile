@@ -9,7 +9,7 @@ import akka.actor.ActorRef
  * @since 20.10.11
  */
 
-class ActorRegistry {
+class Registry {
   private val actors = new ConcurrentHashMap[String, ActorRef]()
 
   def findActorById(id: String): ActorRef = {
@@ -21,7 +21,7 @@ class ActorRegistry {
 
   def registerActor(id: String, actor: ActorRef) {
     val existingActor = actors.putIfAbsent(id, actor)
-    if (existingActor != null) {
+    if (existingActor != null && actor != existingActor) {
       throw new IllegalStateException("Cannot register multiple actors for the id " + id)
     }
   }

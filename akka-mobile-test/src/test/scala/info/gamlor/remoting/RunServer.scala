@@ -1,8 +1,8 @@
 package info.gamlor.remoting
 
 import org.scalatest.Spec
-import akka.config.Supervision.OneForOneStrategy
-import akka.actor.Actor
+import akka.config.Supervision.{SupervisorConfig, OneForOneStrategy}
+import akka.actor.{ActorRef, Supervisor, Actor}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -31,37 +31,58 @@ class PlayAround extends Spec {
     it("dum di dum") {
 
 
-      val neverDone = Actor.actorOf(new Actor() {
-        self.faultHandler = OneForOneStrategy(List(classOf[Exception]), 1, 5000)
-
+      class ReceiverActor extends Actor() {
         override def preStart() {
-          println("start")
+          println("child-start")
         }
 
         override def preRestart(reason: Throwable, message: Option[Any]) {
-          println("restart")
+          println("child-restart")
         }
 
         protected def receive = {
-          case "FirstMsg" => {
-            Thread.sleep(7000)
-          }
           case "Fail" => {
-            println("Super-visor?" + self.supervisor.isDefined)
             throw new KilledMyselfException()
           }
-          case "Fun" => println("Fun yeah")
-          case "Fun 2" => println("Fun yeah2")
         }
-      }).start()
 
-      neverDone ! "Fail"
-      neverDone ! "Fail"
-      neverDone ! "Fail"
-      neverDone ! "Fail"
-      neverDone ! "Fun"
-      neverDone ! "EndMe"
-      neverDone ! "Fun 2"
+        override def postStop() {
+          println("stop")
+        }
+      }
+
+
+      val root = Actor.actorOf(new Actor() {
+
+        private var childActor: ActorRef = null;
+
+        override def preStart() {
+          println("SuperVisor")
+          childActor = Actor.actorOf(new ReceiverActor())
+          self.link(childActor)
+          childActor.start()
+          self ! "Boot"
+        }
+
+        override def preRestart(reason: Throwable, message: Option[Any]) {
+          println("parent-restart")
+        }
+
+        protected def receive = {
+          case "Boot" => {
+            childActor ! "Fail"
+
+          }
+          case x => println(x)
+        }
+      })
+      val supervisor = Supervisor(SupervisorConfig(
+        OneForOneStrategy(List(classOf[Exception]), 2, 10000), Nil
+      ))
+
+      supervisor.link(root);
+      root.start()
+
     }
   }
 

@@ -7,16 +7,16 @@ import akka.testkit.TestKit
 import akka.util.Duration
 import akka.config.Supervision.{Permanent, Supervise, SupervisorConfig, OneForOneStrategy}
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{TimeUnit, CountDownLatch}
 import java.io.IOException
 import akka.actor.{ActorRef, Supervisor, Actor}
+import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 /**
  * @author roman.stoffel@gamlor.info
  * @since 27.10.11
  */
 
-class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
+class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit with TestMesssageProducer {
 
   class ThrowOnSend extends RemoteMessageChannel(new MockSocket) {
     override def send(msg: AkkaMobileProtocol) {
@@ -24,11 +24,16 @@ class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
     }
   }
 
-  val msg = SendMessage(null, None);
+  val msg = SendMessage(buildMockMsg(), None);
+
+  def newMessageActor(channelFactor: () => RemoteMessageChannel): RemoteMessageSendingActor = {
+    val initializer = Actor.actorOf(ResourceInitializeActor(channelFactor)).start();
+    new RemoteMessageSendingActor(initializer);
+  }
 
   describe("On IOException") {
     it("it reports it back") {
-      val actor = Actor.actorOf(new RemoteMessagingActor(() => new ThrowOnSend())).start()
+      val actor = Actor.actorOf(newMessageActor(() => new ThrowOnSend())).start()
       actor ! msg;
 
       val response = receiveOne(Duration.Inf)
@@ -48,7 +53,7 @@ class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
           closedOldChannel.set(true);
         }
       }
-      val actor = Actor.actorOf(new RemoteMessagingActor(() => {
+      val actor = Actor.actorOf(newMessageActor(() => {
         channel
       }))
 
@@ -64,7 +69,7 @@ class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
     }
 
     it("while opening") {
-      val actor = Actor.actorOf(new RemoteMessagingActor(() => {
+      val actor = Actor.actorOf(newMessageActor(() => {
         throw new IOException()
       }))
 
@@ -76,7 +81,7 @@ class RemoteMessagingActorSpec extends Spec with ShouldMatchers with TestKit {
 
     it("can send messaged during reopening") {
 
-      val actor = Actor.actorOf(new RemoteMessagingActor(() => new RemoteMessageChannel(new MockSocket) {
+      val actor = Actor.actorOf(newMessageActor(() => new RemoteMessageChannel(new MockSocket) {
         var callCount = 0;
 
         override def send(msg: AkkaMobileProtocol) {

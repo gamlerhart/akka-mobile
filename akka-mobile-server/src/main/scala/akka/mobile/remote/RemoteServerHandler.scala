@@ -63,7 +63,7 @@ class RemoteServerHandler(channels: ChannelGroup, wireMessageDispatcher: WireMes
   }
 
 
-  private def deSerializeActorRef(refInfo: RemoteActorRefProtocol): RemoteDeviceActorRef = {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol): RemoteDeviceActorRef = {
     val remoteActorId = refInfo.getClassOrServiceName
     val homeAddress = refInfo.getHomeAddress
     homeAddress.getType match {

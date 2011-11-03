@@ -19,11 +19,11 @@ import org.jboss.netty.handler.codec.protobuf.{ProtobufVarint32LengthFieldPrepen
  */
 object NettyRemoteServer {
   def start(hostName: String, portNumber: Int): RemoteServer
-  = new NettyRemoteServer(hostName, portNumber)
+  = new NettyServer(hostName, portNumber)
 
 
-  class NettyRemoteServer(hostName: String, portNumber: Int) extends RemoteServer {
-    private val actorRegistry = new ActorRegistry();
+  class NettyServer(hostName: String, portNumber: Int) extends RemoteServer {
+    private val actorRegistry = new Registry();
     @volatile var isAlive = true
     val name = "NettyRemoteServer@" + hostName + ":" + portNumber
 
@@ -61,7 +61,7 @@ object NettyRemoteServer {
 
   }
 
-  class MobileServerPipelineFactory(channels: ChannelGroup, actorRegistry: ActorRegistry) extends ChannelPipelineFactory {
+  class MobileServerPipelineFactory(channels: ChannelGroup, actorRegistry: Registry) extends ChannelPipelineFactory {
     def getPipeline = {
       val lenDec = new ProtobufVarint32FrameDecoder()
       val lenPrep = new ProtobufVarint32LengthFieldPrepender()
