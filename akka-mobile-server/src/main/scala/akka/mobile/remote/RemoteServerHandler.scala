@@ -55,7 +55,7 @@ class RemoteServerHandler(channels: ChannelGroup, wireMessageDispatcher: WireMes
     })
 
     message.getActorInfo.getActorType match {
-      case SCALA_ACTOR ⇒ wireMessageDispatcher.dispatchToActor(message)
+      case SCALA_ACTOR ⇒ wireMessageDispatcher.dispatchToActor(message, sender)
       case TYPED_ACTOR ⇒ throw new IllegalActorStateException("ActorType TYPED_ACTOR is currently not supported")
       case JAVA_ACTOR ⇒ throw new IllegalActorStateException("ActorType JAVA_ACTOR is currently not supported")
       case other ⇒ throw new IllegalActorStateException("Unknown ActorType [" + other + "]")
@@ -63,7 +63,7 @@ class RemoteServerHandler(channels: ChannelGroup, wireMessageDispatcher: WireMes
   }
 
 
-  private def deSerializeActorRef(refInfo: RemoteActorRefProtocol): RemoteDeviceActorRef = {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol): RemoteDeviceActorRef = {
     val remoteActorId = refInfo.getClassOrServiceName
     val homeAddress = refInfo.getHomeAddress
     homeAddress.getType match {

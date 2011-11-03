@@ -15,6 +15,7 @@ import akka.util.duration._
  */
 
 class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) {
+  val registry: Registry = new Registry
   private val messangers = scala.collection.mutable.Map[InetSocketAddress, ActorRef]()
   private val supervisor = Supervisor(SupervisorConfig(
     AllForOneStrategy(List(classOf[Exception]), 5, 10000), Nil
@@ -25,11 +26,16 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) 
    * The actor communicates with the messages types of {@link akka.mobile.remote.RemoteMessage}
    */
   private def newCommunicationActor(address: InetSocketAddress): ActorRef = {
-    val socketInitialisation = Actor.actorOf(ResourceInitializeActor(() => new RemoteMessageChannel(socketFactory(address))))
+    val socketInitialisation = Actor.actorOf(ResourceInitializeActor(
+      () => new RemoteMessageChannel(socketFactory(address))))
     val sendActor = Actor.actorOf(new RemoteMessageSendingActor(socketInitialisation))
+    val receiveActor = Actor.actorOf(new ReceiveChannelMonitoring(socketInitialisation,
+      new WireMessageDispatcher(registry)))
     supervisor.link(socketInitialisation)
     supervisor.link(sendActor)
+    supervisor.link(receiveActor)
     socketInitialisation.start()
+    receiveActor.start()
     sendActor.start()
   }
 
@@ -46,7 +52,8 @@ object RemoteMessaging {
 
   def apply() = new RemoteMessaging(DEFAULT_TCP_SOCKET_FACTOR)
 
-  def apply(socketFactory: InetSocketAddress => SocketRepresentation) = new RemoteMessaging(socketFactory)
+  def apply(socketFactory: InetSocketAddress => SocketRepresentation)
+  = new RemoteMessaging(socketFactory)
 }
 
 
@@ -96,23 +103,28 @@ class ReceiveChannelMonitoring(channelProvider: ActorRef, dispatcher: WireMessag
     case "Receive" => {
       try {
         if (channel.isEmpty) {
-          channel = Some(
-            (channelProvider ? ResourceInitializeActor.GetResource)
-              .await(5.seconds).resultOrException.get.asInstanceOf[RemoteMessageChannel])
+          channel =
+            Some(
+              (channelProvider ? ResourceInitializeActor.GetResource)
+                .await(5.seconds).resultOrException.get.asInstanceOf[RemoteMessageChannel])
         }
         val msg = channel.get.receive()
-        if (msg.hasMessage) {
-          dispatcher.dispatchToActor(msg.getMessage)
-        } else {
-          throw new Error("Not yet implemented")
+        if (msg != null) {
+          if (msg.hasMessage) {
+            dispatcher.dispatchToActor(msg.getMessage, None)
+          } else if (msg != msg) {
+            throw new Error("Not yet implemented")
+          }
+          self ! "Receive"
         }
-        self ! "Receive"
+
       } catch {
         case e: IOException => {
-          self.channel.tryTell(ReceivingFailed(e))
+          channel.get.close()
           throw e
         }
       }
+
     }
 
   }
@@ -123,8 +135,6 @@ trait RemoteMessage
 case class SendMessage(msg: AkkaMobileProtocol, sender: Option[ActorRef]) extends RemoteMessage
 
 case class IoOperationFailed(exception: Exception) extends RemoteMessage
-
-case class ReceivingFailed(override val exception: Exception) extends IoOperationFailed(exception)
 
 case class SendingFailed(override val exception: Exception, orignalMessage: SendMessage) extends IoOperationFailed(exception)
 

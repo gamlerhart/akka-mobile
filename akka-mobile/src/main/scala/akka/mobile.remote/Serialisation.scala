@@ -45,6 +45,7 @@ object Serialisation {
     builder.build()
   }
 
+
   def deserializeClientId(deviceAddress: DeviceAddress) = ClientId(deviceAddress.getDeviceID, deviceAddress.getAppId)
 
   private def toRemoteActorRefProtocol(actor: ActorRef): RemoteActorRefProtocol = actor match {

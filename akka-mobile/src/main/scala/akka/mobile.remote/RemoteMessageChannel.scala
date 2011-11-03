@@ -1,8 +1,8 @@
 package akka.mobile.remote
 
 import java.net.{Socket, InetSocketAddress}
-import java.io.{OutputStream, InputStream}
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
+import java.io.{OutputStream, InputStream}
 
 /**
  * @author roman.stoffel@gamlor.info

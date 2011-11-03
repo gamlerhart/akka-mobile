@@ -4,9 +4,9 @@ import org.scalatest.Spec
 import akka.testkit.TestKit
 import java.io.IOException
 import akka.mobile.protocol.MobileProtocol.MobileMessageProtocol
-import akka.actor.Actor
 import java.util.concurrent.{TimeUnit, CountDownLatch}
 import org.scalatest.matchers.ShouldMatchers
+import akka.actor.{ActorRef, Actor}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -17,7 +17,7 @@ class ReceiveMessageActorSpec extends Spec with ShouldMatchers with TestKit with
 
   class ThrowOnReceive extends RemoteMessageChannel(new MockSocket) {
     override def receive() = {
-      throw new IOException();
+      throw new IOException("receive failed");
     }
   }
 
@@ -29,8 +29,8 @@ class ReceiveMessageActorSpec extends Spec with ShouldMatchers with TestKit with
       msg.writeDelimitedTo(socket.out)
 
       val expectMsg = new CountDownLatch(2);
-      val expectMsgMock = new WireMessageDispatcher(new ActorRegistry) {
-        override def dispatchToActor(message: MobileMessageProtocol) {
+      val expectMsgMock = new WireMessageDispatcher(new Registry) {
+        override def dispatchToActor(message: MobileMessageProtocol, sender: Option[ActorRef]) {
           expectMsg.countDown()
         }
       }
@@ -42,9 +42,23 @@ class ReceiveMessageActorSpec extends Spec with ShouldMatchers with TestKit with
       mockChannel.start()
 
       expectMsg.await(5, TimeUnit.SECONDS) should be(true)
-
     }
+    it("closes on failure") {
+      val closedConnection = new CountDownLatch(1);
+      val expectMsgMock = new WireMessageDispatcher(new Registry)
 
+      val initializer = Actor.actorOf(ResourceInitializeActor(() => new ThrowOnReceive() {
+        override def close() {
+          closedConnection.countDown()
+        }
+      }));
+      val receiveActor = Actor.actorOf(new ReceiveChannelMonitoring(initializer, expectMsgMock));
+
+      initializer.start()
+      receiveActor.start()
+
+      closedConnection.await(5, TimeUnit.SECONDS) should be(true)
+    }
   }
 
 }
