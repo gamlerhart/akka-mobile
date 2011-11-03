@@ -2,10 +2,11 @@ package akka.mobile.remote
 
 import org.jboss.netty.channel.group.ChannelGroup
 import akka.mobile.protocol.MobileProtocol.ActorType._
-import akka.mobile.protocol.MobileProtocol.{AddressType, RemoteActorRefProtocol, MobileMessageProtocol, AkkaMobileProtocol}
+import akka.mobile.protocol.MobileProtocol.{MobileMessageProtocol, AkkaMobileProtocol}
 import java.util.concurrent.ConcurrentHashMap
 import akka.actor.{ActorRef, IllegalActorStateException}
 import org.jboss.netty.channel.{ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
+import java.net.InetSocketAddress
 
 /**
  *
@@ -14,9 +15,11 @@ import org.jboss.netty.channel.{ChannelStateEvent, MessageEvent, ChannelHandlerC
  */
 
 @ChannelHandler.Sharable
-class RemoteServerHandler(channels: ChannelGroup, wireMessageDispatcher: WireMessageDispatcher)
+class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo: ServerInfo)
   extends SimpleChannelUpstreamHandler with MessageSink {
   private val clientChannels = new ConcurrentHashMap[ClientId, NettyChannel]()
+  private val serializer = new ServerSideSerialisation(this, serverInfo)
+  private val dispatcher = new WireMessageDispatcher(registry, new ServerSideSerialisation(this, serverInfo))
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) {
     event.getMessage match {
@@ -32,12 +35,15 @@ class RemoteServerHandler(channels: ChannelGroup, wireMessageDispatcher: WireMes
   override def channelOpen(ctx: ChannelHandlerContext, event: ChannelStateEvent) = channels.add(ctx.getChannel)
 
 
-  def send(clientId: ClientId, serviceId: String, message: Any, sender: Option[ActorRef]) {
-    val backChannel = clientChannels.get(clientId)
+  def send(clientId: Either[ClientId, InetSocketAddress], serviceId: String, message: Any, sender: Option[ActorRef]) {
+    val backChannel = clientChannels.get(clientId.left.get)
 
-    val msg = AkkaMobileProtocol.newBuilder()
-      .setMessage(Serialisation.oneWayMessageToActor(serviceId, sender, message))
-      .build();
+    sender.foreach(si => {
+      registry.registerActor("uuid:" + si.uuid.toString, si)
+    })
+
+    val msg = serializer.toWireProtocol(
+      serializer.oneWayMessageToActor(serviceId, sender, message))
     backChannel.write(msg);
 
   }
@@ -45,35 +51,22 @@ class RemoteServerHandler(channels: ChannelGroup, wireMessageDispatcher: WireMes
   private def dispatchMessage(message: MobileMessageProtocol, channel: NettyChannel) {
 
     val sender = if (message.hasSender) {
-      Some(deSerializeActorRef(message.getSender))
+      Some(serializer.deSerializeActorRef(message.getSender))
     } else {
       None
     }
 
     sender.foreach(si => {
-      clientChannels.put(si.clientId, channel)
+      clientChannels.put(si.asInstanceOf[RemoteDeviceActorRef].clientId, channel)
     })
 
     message.getActorInfo.getActorType match {
-      case SCALA_ACTOR ⇒ wireMessageDispatcher.dispatchToActor(message, sender)
+      case SCALA_ACTOR ⇒ dispatcher.dispatchToActor(message)
       case TYPED_ACTOR ⇒ throw new IllegalActorStateException("ActorType TYPED_ACTOR is currently not supported")
       case JAVA_ACTOR ⇒ throw new IllegalActorStateException("ActorType JAVA_ACTOR is currently not supported")
       case other ⇒ throw new IllegalActorStateException("Unknown ActorType [" + other + "]")
     }
   }
 
-
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol): RemoteDeviceActorRef = {
-    val remoteActorId = refInfo.getClassOrServiceName
-    val homeAddress = refInfo.getHomeAddress
-    homeAddress.getType match {
-      case AddressType.DEVICE_ADDRESS => {
-        RemoteDeviceActorRef(Serialisation.deserializeClientId(homeAddress.getDeviceAddress),
-          remoteActorId, this)
-      }
-      case AddressType.SERVICE_ADDRESS => throw new Error("TODO")
-      case ue => throw new Error("Unexpected type " + ue)
-    }
-  }
 
 }

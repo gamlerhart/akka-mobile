@@ -9,13 +9,18 @@ import java.net.InetSocketAddress
  * @since 13.10.11
  */
 
-case class ClientRemoteActorRef(address: InetSocketAddress, serviceId: String)
+case class ClientRemoteActorRef(address: InetSocketAddress,
+                                serviceId: String,
+                                messageSender: MessageSink)
   extends ActorRef with ScalaActorRef with NotImplementedActorRef {
 
   id = serviceId
 
   @scala.deprecated("Remoting will become fully transparent in the future")
   def homeAddress = Some(address)
+
+
+  start()
 
   @scala.deprecated("Will be removed without replacement, doesn't make any sense to have in the face of `become` and `unbecome`")
   def actorClassName = notImplemented
@@ -35,7 +40,7 @@ case class ClientRemoteActorRef(address: InetSocketAddress, serviceId: String)
       case ref: ActorRef ⇒ Some(ref)
       case _ ⇒ None
     }
-    Actor.remote.send[Any](message, chSender, None, homeAddress.get, timeout, true, this, None, ActorType.ScalaActor, None)
+    messageSender.send(Right(homeAddress.get), serviceId, message, chSender)
   }
 
   def postMessageToMailboxAndCreateFutureResultWithTimeout(message: Any, timeout: Long, channel: UntypedChannel) = notImplemented

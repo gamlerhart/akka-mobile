@@ -5,6 +5,9 @@ import android.os.Bundle
 import akka.actor.Actor
 import akka.config.Config
 import android.util.Log
+import android.telephony.TelephonyManager
+import android.content.Context
+import android.provider.Settings.Secure
 
 class AkkaDroidApp extends Activity {
 
@@ -12,11 +15,14 @@ class AkkaDroidApp extends Activity {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main)
 
+    val telephonyManager = this.getSystemService(Context.TELEPHONY_SERVICE).asInstanceOf[TelephonyManager];
 
-    val cfgProv = Config.config;
+    val id = telephonyManager.getDeviceId;
+    println(id);
 
-    val cfg = cfgProv.getString("akka.remote.layer","noNo");
-    Log.i("cfg",cfg)
+    val otehrId = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+    println(id);
+
     val r = Actor.actorOf[MyActor].start()
     r ! "Start"
   }

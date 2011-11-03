@@ -32,7 +32,7 @@ case class RemoteDeviceActorRef(clientId: ClientId,
       case ref: ActorRef ⇒ Some(ref)
       case _ ⇒ None
     }
-    remoteService.send(clientId, serviceId, message, chSender)
+    remoteService.send(Left(clientId), serviceId, message, chSender)
   }
 
   def postMessageToMailboxAndCreateFutureResultWithTimeout(message: Any, timeout: Long, channel: UntypedChannel)

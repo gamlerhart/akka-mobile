@@ -119,59 +119,13 @@ public final class MobileProtocol {
         // @@protoc_insertion_point(enum_scope:SerializationSchemeType)
     }
 
-    public enum LifeCycleType
-            implements com.google.protobuf.Internal.EnumLite {
-        PERMANENT(0, 1),
-        TEMPORARY(1, 2),;
-
-        public static final int PERMANENT_VALUE = 1;
-        public static final int TEMPORARY_VALUE = 2;
-
-
-        public final int getNumber() {
-            return value;
-        }
-
-        public static LifeCycleType valueOf(int value) {
-            switch (value) {
-                case 1:
-                    return PERMANENT;
-                case 2:
-                    return TEMPORARY;
-                default:
-                    return null;
-            }
-        }
-
-        public static com.google.protobuf.Internal.EnumLiteMap<LifeCycleType>
-        internalGetValueMap() {
-            return internalValueMap;
-        }
-
-        private static com.google.protobuf.Internal.EnumLiteMap<LifeCycleType>
-                internalValueMap =
-                new com.google.protobuf.Internal.EnumLiteMap<LifeCycleType>() {
-                    public LifeCycleType findValueByNumber(int number) {
-                        return LifeCycleType.valueOf(number);
-                    }
-                };
-
-        private final int value;
-
-        private LifeCycleType(int index, int value) {
-            this.value = value;
-        }
-
-        // @@protoc_insertion_point(enum_scope:LifeCycleType)
-    }
-
     public enum AddressType
             implements com.google.protobuf.Internal.EnumLite {
-        SERVICE_ADDRESS(0, 1),;
+        SERVICE_ADDRESS(0, 1),
+        DEVICE_ADDRESS(1, 2),;
 
-        public static final AddressType DEVICE_ADDRESS = SERVICE_ADDRESS;
         public static final int SERVICE_ADDRESS_VALUE = 1;
-        public static final int DEVICE_ADDRESS_VALUE = 1;
+        public static final int DEVICE_ADDRESS_VALUE = 2;
 
 
         public final int getNumber() {
@@ -182,6 +136,8 @@ public final class MobileProtocol {
             switch (value) {
                 case 1:
                     return SERVICE_ADDRESS;
+                case 2:
+                    return DEVICE_ADDRESS;
                 default:
                     return null;
             }
@@ -1813,10 +1769,10 @@ public final class MobileProtocol {
 
         String getClassOrServiceName();
 
-        // required .AddressProtocol homeAddress = 2;
-        boolean hasHomeAddress();
+        // required .AddressProtocol nodeAddress = 2;
+        boolean hasNodeAddress();
 
-        akka.mobile.protocol.MobileProtocol.AddressProtocol getHomeAddress();
+        akka.mobile.protocol.MobileProtocol.AddressProtocol getNodeAddress();
     }
 
     public static final class RemoteActorRefProtocol extends
@@ -1876,21 +1832,21 @@ public final class MobileProtocol {
             }
         }
 
-        // required .AddressProtocol homeAddress = 2;
-        public static final int HOMEADDRESS_FIELD_NUMBER = 2;
-        private akka.mobile.protocol.MobileProtocol.AddressProtocol homeAddress_;
+        // required .AddressProtocol nodeAddress = 2;
+        public static final int NODEADDRESS_FIELD_NUMBER = 2;
+        private akka.mobile.protocol.MobileProtocol.AddressProtocol nodeAddress_;
 
-        public boolean hasHomeAddress() {
+        public boolean hasNodeAddress() {
             return ((bitField0_ & 0x00000002) == 0x00000002);
         }
 
-        public akka.mobile.protocol.MobileProtocol.AddressProtocol getHomeAddress() {
-            return homeAddress_;
+        public akka.mobile.protocol.MobileProtocol.AddressProtocol getNodeAddress() {
+            return nodeAddress_;
         }
 
         private void initFields() {
             classOrServiceName_ = "";
-            homeAddress_ = akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance();
+            nodeAddress_ = akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance();
         }
 
         private byte memoizedIsInitialized = -1;
@@ -1903,11 +1859,11 @@ public final class MobileProtocol {
                 memoizedIsInitialized = 0;
                 return false;
             }
-            if (!hasHomeAddress()) {
+            if (!hasNodeAddress()) {
                 memoizedIsInitialized = 0;
                 return false;
             }
-            if (!getHomeAddress().isInitialized()) {
+            if (!getNodeAddress().isInitialized()) {
                 memoizedIsInitialized = 0;
                 return false;
             }
@@ -1922,7 +1878,7 @@ public final class MobileProtocol {
                 output.writeBytes(1, getClassOrServiceNameBytes());
             }
             if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                output.writeMessage(2, homeAddress_);
+                output.writeMessage(2, nodeAddress_);
             }
         }
 
@@ -1939,7 +1895,7 @@ public final class MobileProtocol {
             }
             if (((bitField0_ & 0x00000002) == 0x00000002)) {
                 size += com.google.protobuf.CodedOutputStream
-                        .computeMessageSize(2, homeAddress_);
+                        .computeMessageSize(2, nodeAddress_);
             }
             memoizedSerializedSize = size;
             return size;
@@ -2065,7 +2021,7 @@ public final class MobileProtocol {
                 super.clear();
                 classOrServiceName_ = "";
                 bitField0_ = (bitField0_ & ~0x00000001);
-                homeAddress_ = akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance();
+                nodeAddress_ = akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance();
                 bitField0_ = (bitField0_ & ~0x00000002);
                 return this;
             }
@@ -2107,7 +2063,7 @@ public final class MobileProtocol {
                 if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
                     to_bitField0_ |= 0x00000002;
                 }
-                result.homeAddress_ = homeAddress_;
+                result.nodeAddress_ = nodeAddress_;
                 result.bitField0_ = to_bitField0_;
                 return result;
             }
@@ -2118,8 +2074,8 @@ public final class MobileProtocol {
                 if (other.hasClassOrServiceName()) {
                     setClassOrServiceName(other.getClassOrServiceName());
                 }
-                if (other.hasHomeAddress()) {
-                    mergeHomeAddress(other.getHomeAddress());
+                if (other.hasNodeAddress()) {
+                    mergeNodeAddress(other.getNodeAddress());
                 }
                 return this;
             }
@@ -2129,11 +2085,11 @@ public final class MobileProtocol {
 
                     return false;
                 }
-                if (!hasHomeAddress()) {
+                if (!hasNodeAddress()) {
 
                     return false;
                 }
-                if (!getHomeAddress().isInitialized()) {
+                if (!getNodeAddress().isInitialized()) {
 
                     return false;
                 }
@@ -2164,11 +2120,11 @@ public final class MobileProtocol {
                         }
                         case 18: {
                             akka.mobile.protocol.MobileProtocol.AddressProtocol.Builder subBuilder = akka.mobile.protocol.MobileProtocol.AddressProtocol.newBuilder();
-                            if (hasHomeAddress()) {
-                                subBuilder.mergeFrom(getHomeAddress());
+                            if (hasNodeAddress()) {
+                                subBuilder.mergeFrom(getNodeAddress());
                             }
                             input.readMessage(subBuilder, extensionRegistry);
-                            setHomeAddress(subBuilder.buildPartial());
+                            setNodeAddress(subBuilder.buildPartial());
                             break;
                         }
                     }
@@ -2218,50 +2174,50 @@ public final class MobileProtocol {
 
             }
 
-            // required .AddressProtocol homeAddress = 2;
-            private akka.mobile.protocol.MobileProtocol.AddressProtocol homeAddress_ = akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance();
+            // required .AddressProtocol nodeAddress = 2;
+            private akka.mobile.protocol.MobileProtocol.AddressProtocol nodeAddress_ = akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance();
 
-            public boolean hasHomeAddress() {
+            public boolean hasNodeAddress() {
                 return ((bitField0_ & 0x00000002) == 0x00000002);
             }
 
-            public akka.mobile.protocol.MobileProtocol.AddressProtocol getHomeAddress() {
-                return homeAddress_;
+            public akka.mobile.protocol.MobileProtocol.AddressProtocol getNodeAddress() {
+                return nodeAddress_;
             }
 
-            public Builder setHomeAddress(akka.mobile.protocol.MobileProtocol.AddressProtocol value) {
+            public Builder setNodeAddress(akka.mobile.protocol.MobileProtocol.AddressProtocol value) {
                 if (value == null) {
                     throw new NullPointerException();
                 }
-                homeAddress_ = value;
+                nodeAddress_ = value;
 
                 bitField0_ |= 0x00000002;
                 return this;
             }
 
-            public Builder setHomeAddress(
+            public Builder setNodeAddress(
                     akka.mobile.protocol.MobileProtocol.AddressProtocol.Builder builderForValue) {
-                homeAddress_ = builderForValue.build();
+                nodeAddress_ = builderForValue.build();
 
                 bitField0_ |= 0x00000002;
                 return this;
             }
 
-            public Builder mergeHomeAddress(akka.mobile.protocol.MobileProtocol.AddressProtocol value) {
+            public Builder mergeNodeAddress(akka.mobile.protocol.MobileProtocol.AddressProtocol value) {
                 if (((bitField0_ & 0x00000002) == 0x00000002) &&
-                        homeAddress_ != akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance()) {
-                    homeAddress_ =
-                            akka.mobile.protocol.MobileProtocol.AddressProtocol.newBuilder(homeAddress_).mergeFrom(value).buildPartial();
+                        nodeAddress_ != akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance()) {
+                    nodeAddress_ =
+                            akka.mobile.protocol.MobileProtocol.AddressProtocol.newBuilder(nodeAddress_).mergeFrom(value).buildPartial();
                 } else {
-                    homeAddress_ = value;
+                    nodeAddress_ = value;
                 }
 
                 bitField0_ |= 0x00000002;
                 return this;
             }
 
-            public Builder clearHomeAddress() {
-                homeAddress_ = akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance();
+            public Builder clearNodeAddress() {
+                nodeAddress_ = akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance();
 
                 bitField0_ = (bitField0_ & ~0x00000002);
                 return this;
@@ -4133,338 +4089,6 @@ public final class MobileProtocol {
         }
 
         // @@protoc_insertion_point(class_scope:MetadataEntryProtocol)
-    }
-
-    public interface LifeCycleProtocolOrBuilder
-            extends com.google.protobuf.MessageLiteOrBuilder {
-
-        // required .LifeCycleType lifeCycle = 1;
-        boolean hasLifeCycle();
-
-        akka.mobile.protocol.MobileProtocol.LifeCycleType getLifeCycle();
-    }
-
-    public static final class LifeCycleProtocol extends
-            com.google.protobuf.GeneratedMessageLite
-            implements LifeCycleProtocolOrBuilder {
-        // Use LifeCycleProtocol.newBuilder() to construct.
-        private LifeCycleProtocol(Builder builder) {
-            super(builder);
-        }
-
-        private LifeCycleProtocol(boolean noInit) {
-        }
-
-        private static final LifeCycleProtocol defaultInstance;
-
-        public static LifeCycleProtocol getDefaultInstance() {
-            return defaultInstance;
-        }
-
-        public LifeCycleProtocol getDefaultInstanceForType() {
-            return defaultInstance;
-        }
-
-        private int bitField0_;
-        // required .LifeCycleType lifeCycle = 1;
-        public static final int LIFECYCLE_FIELD_NUMBER = 1;
-        private akka.mobile.protocol.MobileProtocol.LifeCycleType lifeCycle_;
-
-        public boolean hasLifeCycle() {
-            return ((bitField0_ & 0x00000001) == 0x00000001);
-        }
-
-        public akka.mobile.protocol.MobileProtocol.LifeCycleType getLifeCycle() {
-            return lifeCycle_;
-        }
-
-        private void initFields() {
-            lifeCycle_ = akka.mobile.protocol.MobileProtocol.LifeCycleType.PERMANENT;
-        }
-
-        private byte memoizedIsInitialized = -1;
-
-        public final boolean isInitialized() {
-            byte isInitialized = memoizedIsInitialized;
-            if (isInitialized != -1) return isInitialized == 1;
-
-            if (!hasLifeCycle()) {
-                memoizedIsInitialized = 0;
-                return false;
-            }
-            memoizedIsInitialized = 1;
-            return true;
-        }
-
-        public void writeTo(com.google.protobuf.CodedOutputStream output)
-                throws java.io.IOException {
-            getSerializedSize();
-            if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                output.writeEnum(1, lifeCycle_.getNumber());
-            }
-        }
-
-        private int memoizedSerializedSize = -1;
-
-        public int getSerializedSize() {
-            int size = memoizedSerializedSize;
-            if (size != -1) return size;
-
-            size = 0;
-            if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                size += com.google.protobuf.CodedOutputStream
-                        .computeEnumSize(1, lifeCycle_.getNumber());
-            }
-            memoizedSerializedSize = size;
-            return size;
-        }
-
-        private static final long serialVersionUID = 0L;
-
-        @java.lang.Override
-        protected java.lang.Object writeReplace()
-                throws java.io.ObjectStreamException {
-            return super.writeReplace();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseFrom(
-                com.google.protobuf.ByteString data)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return newBuilder().mergeFrom(data).buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseFrom(
-                com.google.protobuf.ByteString data,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return newBuilder().mergeFrom(data, extensionRegistry)
-                    .buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseFrom(byte[] data)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return newBuilder().mergeFrom(data).buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseFrom(
-                byte[] data,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return newBuilder().mergeFrom(data, extensionRegistry)
-                    .buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseFrom(java.io.InputStream input)
-                throws java.io.IOException {
-            return newBuilder().mergeFrom(input).buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseFrom(
-                java.io.InputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
-            return newBuilder().mergeFrom(input, extensionRegistry)
-                    .buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseDelimitedFrom(java.io.InputStream input)
-                throws java.io.IOException {
-            Builder builder = newBuilder();
-            if (builder.mergeDelimitedFrom(input)) {
-                return builder.buildParsed();
-            } else {
-                return null;
-            }
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseDelimitedFrom(
-                java.io.InputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
-            Builder builder = newBuilder();
-            if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
-                return builder.buildParsed();
-            } else {
-                return null;
-            }
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseFrom(
-                com.google.protobuf.CodedInputStream input)
-                throws java.io.IOException {
-            return newBuilder().mergeFrom(input).buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.LifeCycleProtocol parseFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
-            return newBuilder().mergeFrom(input, extensionRegistry)
-                    .buildParsed();
-        }
-
-        public static Builder newBuilder() {
-            return Builder.create();
-        }
-
-        public Builder newBuilderForType() {
-            return newBuilder();
-        }
-
-        public static Builder newBuilder(akka.mobile.protocol.MobileProtocol.LifeCycleProtocol prototype) {
-            return newBuilder().mergeFrom(prototype);
-        }
-
-        public Builder toBuilder() {
-            return newBuilder(this);
-        }
-
-        public static final class Builder extends
-                com.google.protobuf.GeneratedMessageLite.Builder<
-                        akka.mobile.protocol.MobileProtocol.LifeCycleProtocol, Builder>
-                implements akka.mobile.protocol.MobileProtocol.LifeCycleProtocolOrBuilder {
-            // Construct using akka.mobile.protocol.MobileProtocol.LifeCycleProtocol.newBuilder()
-            private Builder() {
-                maybeForceBuilderInitialization();
-            }
-
-            private void maybeForceBuilderInitialization() {
-            }
-
-            private static Builder create() {
-                return new Builder();
-            }
-
-            public Builder clear() {
-                super.clear();
-                lifeCycle_ = akka.mobile.protocol.MobileProtocol.LifeCycleType.PERMANENT;
-                bitField0_ = (bitField0_ & ~0x00000001);
-                return this;
-            }
-
-            public Builder clone() {
-                return create().mergeFrom(buildPartial());
-            }
-
-            public akka.mobile.protocol.MobileProtocol.LifeCycleProtocol getDefaultInstanceForType() {
-                return akka.mobile.protocol.MobileProtocol.LifeCycleProtocol.getDefaultInstance();
-            }
-
-            public akka.mobile.protocol.MobileProtocol.LifeCycleProtocol build() {
-                akka.mobile.protocol.MobileProtocol.LifeCycleProtocol result = buildPartial();
-                if (!result.isInitialized()) {
-                    throw newUninitializedMessageException(result);
-                }
-                return result;
-            }
-
-            private akka.mobile.protocol.MobileProtocol.LifeCycleProtocol buildParsed()
-                    throws com.google.protobuf.InvalidProtocolBufferException {
-                akka.mobile.protocol.MobileProtocol.LifeCycleProtocol result = buildPartial();
-                if (!result.isInitialized()) {
-                    throw newUninitializedMessageException(
-                            result).asInvalidProtocolBufferException();
-                }
-                return result;
-            }
-
-            public akka.mobile.protocol.MobileProtocol.LifeCycleProtocol buildPartial() {
-                akka.mobile.protocol.MobileProtocol.LifeCycleProtocol result = new akka.mobile.protocol.MobileProtocol.LifeCycleProtocol(this);
-                int from_bitField0_ = bitField0_;
-                int to_bitField0_ = 0;
-                if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-                    to_bitField0_ |= 0x00000001;
-                }
-                result.lifeCycle_ = lifeCycle_;
-                result.bitField0_ = to_bitField0_;
-                return result;
-            }
-
-            public Builder mergeFrom(akka.mobile.protocol.MobileProtocol.LifeCycleProtocol other) {
-                if (other == akka.mobile.protocol.MobileProtocol.LifeCycleProtocol.getDefaultInstance()) return this;
-                if (other.hasLifeCycle()) {
-                    setLifeCycle(other.getLifeCycle());
-                }
-                return this;
-            }
-
-            public final boolean isInitialized() {
-                if (!hasLifeCycle()) {
-
-                    return false;
-                }
-                return true;
-            }
-
-            public Builder mergeFrom(
-                    com.google.protobuf.CodedInputStream input,
-                    com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                    throws java.io.IOException {
-                while (true) {
-                    int tag = input.readTag();
-                    switch (tag) {
-                        case 0:
-
-                            return this;
-                        default: {
-                            if (!parseUnknownField(input, extensionRegistry, tag)) {
-
-                                return this;
-                            }
-                            break;
-                        }
-                        case 8: {
-                            int rawValue = input.readEnum();
-                            akka.mobile.protocol.MobileProtocol.LifeCycleType value = akka.mobile.protocol.MobileProtocol.LifeCycleType.valueOf(rawValue);
-                            if (value != null) {
-                                bitField0_ |= 0x00000001;
-                                lifeCycle_ = value;
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-
-            private int bitField0_;
-
-            // required .LifeCycleType lifeCycle = 1;
-            private akka.mobile.protocol.MobileProtocol.LifeCycleType lifeCycle_ = akka.mobile.protocol.MobileProtocol.LifeCycleType.PERMANENT;
-
-            public boolean hasLifeCycle() {
-                return ((bitField0_ & 0x00000001) == 0x00000001);
-            }
-
-            public akka.mobile.protocol.MobileProtocol.LifeCycleType getLifeCycle() {
-                return lifeCycle_;
-            }
-
-            public Builder setLifeCycle(akka.mobile.protocol.MobileProtocol.LifeCycleType value) {
-                if (value == null) {
-                    throw new NullPointerException();
-                }
-                bitField0_ |= 0x00000001;
-                lifeCycle_ = value;
-
-                return this;
-            }
-
-            public Builder clearLifeCycle() {
-                bitField0_ = (bitField0_ & ~0x00000001);
-                lifeCycle_ = akka.mobile.protocol.MobileProtocol.LifeCycleType.PERMANENT;
-
-                return this;
-            }
-
-            // @@protoc_insertion_point(builder_scope:LifeCycleProtocol)
-        }
-
-        static {
-            defaultInstance = new LifeCycleProtocol(true);
-            defaultInstance.initFields();
-        }
-
-        // @@protoc_insertion_point(class_scope:LifeCycleProtocol)
     }
 
     public interface AddressProtocolOrBuilder

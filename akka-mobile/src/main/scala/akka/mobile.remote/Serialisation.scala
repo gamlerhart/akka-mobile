@@ -12,7 +12,7 @@ import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, Byt
  */
 
 
-object Serialisation {
+trait Serialisation {
 
   def toWireProtocol(rmp: MobileMessageProtocol): AkkaMobileProtocol = {
     val arp = AkkaMobileProtocol.newBuilder
@@ -45,24 +45,27 @@ object Serialisation {
     builder.build()
   }
 
+  def toAddressProtocol(actorRef: ActorRef): AddressProtocol
 
-  def deserializeClientId(deviceAddress: DeviceAddress) = ClientId(deviceAddress.getDeviceID, deviceAddress.getAppId)
+  def deSerializeSender(msg: MobileMessageProtocol): Option[ActorRef] = {
+    if (msg.hasSender) {
+      Some(deSerializeActorRef(msg.getSender))
+    } else {
+      None
+    }
+  }
+
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol): ActorRef
+
 
   private def toRemoteActorRefProtocol(actor: ActorRef): RemoteActorRefProtocol = actor match {
     case localActor: LocalActorRef ⇒
 
       RemoteActorRefProtocol.newBuilder
         .setClassOrServiceName("uuid:" + localActor.uuid.toString)
-        .setHomeAddress(toAddressProtocol(localActor))
+        .setNodeAddress(toAddressProtocol(localActor))
         .build
     case _ => throw new Error("Not implemented")
-  }
-
-  private def toAddressProtocol(actorRef: ActorRef) = {
-    AddressProtocol.newBuilder
-      .setType(AddressType.DEVICE_ADDRESS)
-      .setDeviceAddress(DeviceAddress.newBuilder().setAppId("mock").setDeviceID("mock"))
-      .build
   }
 
   private def serializeMsg(msg: Any): MessageProtocol.Builder = {
@@ -73,11 +76,13 @@ object Serialisation {
   }
 
 
-  def deSerializeMsg(msg: MessageProtocol): AnyRef = {
-    msg.getSerializationScheme match {
-      case SerializationSchemeType.JAVA => javaDeSerialize(msg.getMessage.toByteArray)
+  def deSerializeMsg(msg: MobileMessageProtocol) = {
+    val deserializedMsg = msg.getMessage.getSerializationScheme match {
+      case SerializationSchemeType.JAVA => javaDeSerialize(msg.getMessage.getMessage.toByteArray)
       case _ => throw new Error("Not yet implemented")
     }
+    val senderOption = deSerializeSender(msg)
+    (deserializedMsg, senderOption)
   }
 
   private def javaSerialize(msg: Any): Array[Byte] = {

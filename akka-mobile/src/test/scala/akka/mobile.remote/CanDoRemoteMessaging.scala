@@ -9,6 +9,7 @@ import akka.util.Duration
 import java.io._
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{TimeUnit, CountDownLatch}
+import akka.mobile.testutils.BlackHoleMessageSink
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -24,7 +25,7 @@ class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssagePro
       val channelFactory = RemoteMessaging(a => {
         callCounter.incrementAndGet()
         socket
-      })
+      }, BlackHoleMessageSink)
       channelFactory.channelFor(new InetSocketAddress("localhost", 8080)) ! SendMessage(buildMockMsg(), None)
       channelFactory.channelFor(new InetSocketAddress("localhost", 8080)) ! SendMessage(buildMockMsg(), None)
 
@@ -44,7 +45,7 @@ class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssagePro
         def in = inS
 
         def out = outS
-      })
+      }, BlackHoleMessageSink)
       val msgChannel = toTest.channelFor(MOCK_ADDRESS)
       val msg = buildMockMsg()
       msgChannel ! SendMessage(msg, None)
@@ -64,7 +65,7 @@ class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssagePro
           counter.countDown()
           throw new IOException()
         }
-      }).channelFor(MOCK_ADDRESS)
+      }, BlackHoleMessageSink).channelFor(MOCK_ADDRESS)
 
       channel ! SendMessage(buildMockMsg(), None)
       channel ! SendMessage(buildMockMsg(), None)
@@ -80,12 +81,12 @@ class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssagePro
   }
   describe("With the remote message actor") {
     it("you can get an for host and port") {
-      val toTest = RemoteMessaging(a => new MockSocket)
+      val toTest = RemoteMessaging(a => new MockSocket, BlackHoleMessageSink)
       val msgChannel = toTest.channelFor(MOCK_ADDRESS)
       msgChannel should not be (null)
     }
     it("you can get the same actor for same host & ip") {
-      val toTest = RemoteMessaging(a => new MockSocket)
+      val toTest = RemoteMessaging(a => new MockSocket, BlackHoleMessageSink)
       val msgC1 = toTest.channelFor(MOCK_ADDRESS)
       val msgC2 = toTest.channelFor(MOCK_ADDRESS)
       msgC1 should be(msgC2)
