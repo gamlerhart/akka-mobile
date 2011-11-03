@@ -7,26 +7,25 @@ import android.os.Handler
 import android.widget.TextView
 import android.content.Context
 import android.app.Activity
-import akka.mobile.remote.ClientRemote
-import java.net.{InetSocketAddress, Socket}
 
 /**
-* @author roman.stoffel@gamlor.info
-* @since 05.10.11
-*/
+ * @author roman.stoffel@gamlor.info
+ * @since 05.10.11
+ */
 
 class MyActor() extends Actor {
   self.id = newUuid().toString
+
   protected def receive = {
-    case "Start" =>{
+    case "Start" => {
       val remote = Actor.remote;
-      val actor = remote.actorFor("echo","10.0.2.2",2552);
+      val actor = remote.actorFor("echo", "10.0.2.2", 2552);
 
 
 
-     actor ! "hi from droid"
+      actor ! "hi from droid"
     }
-    case x : String => {
+    case x: String => {
       println(x)
     }
   }

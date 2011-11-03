@@ -7,6 +7,7 @@ import akka.mobile.protocol.MobileProtocol.MobileMessageProtocol
 import java.util.concurrent.{TimeUnit, CountDownLatch}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.Actor
+import akka.mobile.testutils.BlackHoleMessageSink
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -29,7 +30,7 @@ class ReceiveMessageActorSpec extends Spec with ShouldMatchers with TestKit with
       msg.writeDelimitedTo(socket.out)
 
       val expectMsg = new CountDownLatch(2);
-      val expectMsgMock = new WireMessageDispatcher(new Registry, ClientSideSerialisation) {
+      val expectMsgMock = new WireMessageDispatcher(new Registry, new ClientSideSerialisation(BlackHoleMessageSink)) {
         override def dispatchToActor(message: MobileMessageProtocol) {
           expectMsg.countDown()
         }
@@ -45,7 +46,7 @@ class ReceiveMessageActorSpec extends Spec with ShouldMatchers with TestKit with
     }
     it("closes on failure") {
       val closedConnection = new CountDownLatch(1);
-      val expectMsgMock = new WireMessageDispatcher(new Registry, ClientSideSerialisation)
+      val expectMsgMock = new WireMessageDispatcher(new Registry, new ClientSideSerialisation(BlackHoleMessageSink))
 
       val initializer = Actor.actorOf(ResourceInitializeActor(() => new ThrowOnReceive() {
         override def close() {

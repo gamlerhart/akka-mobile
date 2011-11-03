@@ -7,12 +7,13 @@ import akka.mobile.protocol.MobileProtocol._
  * @author roman.stoffel@gamlor.info
  * @since 03.11.11
  */
+case class ServerInfo(hostName: String, port: Int)
 
-class ServerSideSerialisation(msgSink: MessageSink) extends Serialisation {
+class ServerSideSerialisation(msgSink: MessageSink, serverInfo: ServerInfo) extends Serialisation {
   def toAddressProtocol(actorRef: ActorRef) = {
     AddressProtocol.newBuilder
       .setType(AddressType.SERVICE_ADDRESS)
-      .setServiceAddress(ServiceAddress.newBuilder().setHostname("localhost").setPort(2556))
+      .setServiceAddress(ServiceAddress.newBuilder().setHostname(serverInfo.hostName).setPort(serverInfo.port))
       .build()
 
   }

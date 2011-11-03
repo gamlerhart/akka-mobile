@@ -30,7 +30,7 @@ object NettyRemoteServer {
     private val bootstrap = new ServerBootstrap(
       new NioServerSocketChannelFactory(Executors.newCachedThreadPool, Executors.newCachedThreadPool))
     private val openChannels: ChannelGroup = new DefaultDisposableChannelGroup("akka--mobile-server")
-    bootstrap.setPipelineFactory(new MobileServerPipelineFactory(openChannels, actorRegistry))
+    bootstrap.setPipelineFactory(new MobileServerPipelineFactory(openChannels, actorRegistry, new ServerInfo(hostName, portNumber)))
     bootstrap.setOption("backlog", 1024)
     bootstrap.setOption("child.tcpNoDelay", true)
     bootstrap.setOption("child.keepAlive", true)
@@ -61,7 +61,7 @@ object NettyRemoteServer {
 
   }
 
-  class MobileServerPipelineFactory(channels: ChannelGroup, actorRegistry: Registry) extends ChannelPipelineFactory {
+  class MobileServerPipelineFactory(channels: ChannelGroup, actorRegistry: Registry, serverInfo: ServerInfo) extends ChannelPipelineFactory {
     def getPipeline = {
       val lenDec = new ProtobufVarint32FrameDecoder()
       val lenPrep = new ProtobufVarint32LengthFieldPrepender()
@@ -76,7 +76,7 @@ object NettyRemoteServer {
           0,
           60, TimeUnit.SECONDS));
 
-      val serverHandler = new RemoteServerHandler(channels, actorRegistry)
+      val serverHandler = new RemoteServerHandler(channels, actorRegistry, serverInfo)
       val stages: List[ChannelHandler]
       = lenDec :: protobufDec :: lenPrep :: protobufEnc :: executor :: serverHandler :: Nil
       new StaticChannelPipeline(stages: _*)

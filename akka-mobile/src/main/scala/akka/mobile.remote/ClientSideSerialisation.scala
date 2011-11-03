@@ -9,7 +9,7 @@ import java.net.InetSocketAddress
  * @since 03.11.11
  */
 
-object ClientSideSerialisation extends Serialisation {
+class ClientSideSerialisation(messageSender: MessageSink) extends Serialisation {
   def toAddressProtocol(actorRef: ActorRef) = {
     AddressProtocol.newBuilder
       .setType(AddressType.DEVICE_ADDRESS)
@@ -24,7 +24,7 @@ object ClientSideSerialisation extends Serialisation {
       case AddressType.SERVICE_ADDRESS => {
         ClientRemoteActorRef(
           deserializeServerId(homeAddress.getServiceAddress),
-          remoteActorId);
+          remoteActorId, messageSender);
       }
       case AddressType.DEVICE_ADDRESS
       => throw new IllegalArgumentException("Cannot send answers back to other mobile devices")

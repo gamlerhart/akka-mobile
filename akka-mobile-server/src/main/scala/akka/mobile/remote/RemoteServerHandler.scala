@@ -6,6 +6,7 @@ import akka.mobile.protocol.MobileProtocol.{MobileMessageProtocol, AkkaMobilePro
 import java.util.concurrent.ConcurrentHashMap
 import akka.actor.{ActorRef, IllegalActorStateException}
 import org.jboss.netty.channel.{ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
+import java.net.InetSocketAddress
 
 /**
  *
@@ -14,11 +15,11 @@ import org.jboss.netty.channel.{ChannelStateEvent, MessageEvent, ChannelHandlerC
  */
 
 @ChannelHandler.Sharable
-class RemoteServerHandler(channels: ChannelGroup, registry: Registry)
+class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo: ServerInfo)
   extends SimpleChannelUpstreamHandler with MessageSink {
   private val clientChannels = new ConcurrentHashMap[ClientId, NettyChannel]()
-  private val serializer = new ServerSideSerialisation(this)
-  private val dispatcher = new WireMessageDispatcher(registry, new ServerSideSerialisation(this))
+  private val serializer = new ServerSideSerialisation(this, serverInfo)
+  private val dispatcher = new WireMessageDispatcher(registry, new ServerSideSerialisation(this, serverInfo))
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) {
     event.getMessage match {
@@ -34,8 +35,12 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry)
   override def channelOpen(ctx: ChannelHandlerContext, event: ChannelStateEvent) = channels.add(ctx.getChannel)
 
 
-  def send(clientId: ClientId, serviceId: String, message: Any, sender: Option[ActorRef]) {
-    val backChannel = clientChannels.get(clientId)
+  def send(clientId: Either[ClientId, InetSocketAddress], serviceId: String, message: Any, sender: Option[ActorRef]) {
+    val backChannel = clientChannels.get(clientId.left.get)
+
+    sender.foreach(si => {
+      registry.registerActor("uuid:" + si.uuid.toString, si)
+    })
 
     val msg = serializer.toWireProtocol(
       serializer.oneWayMessageToActor(serviceId, sender, message))
