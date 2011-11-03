@@ -13,8 +13,6 @@ import java.net.InetSocketAddress
 
 class ClientRemote(messaging: RemoteMessaging) extends RemoteSupport with RemoteClientModule {
 
-  import akka.mobile.remote.Serialisation._
-
 
   def this() = this (RemoteMessaging())
 
@@ -60,7 +58,7 @@ class ClientRemote(messaging: RemoteMessaging) extends RemoteSupport with Remote
   def typedActorFor[T](intfClass: Class[T], serviceId: String, implClassName: String, timeout: Long, host: String, port: Int, loader: Option[ClassLoader]) = notImplemented
 
   def actorFor(serviceId: String, className: String, timeout: Long, hostname: String, port: Int, loader: Option[ClassLoader]) = {
-    ClientRemoteActorRef(new InetSocketAddress(hostname, port), serviceId).start()
+    ClientRemoteActorRef(new InetSocketAddress(hostname, port), serviceId)
   }
 
   def send[T](message: Any,
@@ -74,7 +72,8 @@ class ClientRemote(messaging: RemoteMessaging) extends RemoteSupport with Remote
               actorType: ActorType,
               loader: Option[ClassLoader]): Option[CompletableFuture[T]] = {
     messaging.registry.registerActor("uuid:" + senderOption.get.uuid.toString, senderOption.get)
-    var msg = toWireProtocol(oneWayMessageToActor(actorRef.id, senderOption, message))
+    var msg = ClientSideSerialisation.toWireProtocol(
+      ClientSideSerialisation.oneWayMessageToActor(actorRef.id, senderOption, message))
     val remoteChannel = messaging.channelFor(remoteAddress)
     remoteChannel ! SendMessage(msg, senderOption)
     None

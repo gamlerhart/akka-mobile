@@ -17,6 +17,9 @@ case class ClientRemoteActorRef(address: InetSocketAddress, serviceId: String)
   @scala.deprecated("Remoting will become fully transparent in the future")
   def homeAddress = Some(address)
 
+
+  start()
+
   @scala.deprecated("Will be removed without replacement, doesn't make any sense to have in the face of `become` and `unbecome`")
   def actorClassName = notImplemented
 

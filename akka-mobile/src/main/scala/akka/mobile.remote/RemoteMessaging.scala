@@ -1,12 +1,12 @@
 package akka.mobile.remote
 
-import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import java.net.InetSocketAddress
 import java.io.IOException
 import akka.dispatch.Dispatchers
 import akka.actor._
 import akka.config.Supervision.{AllForOneStrategy, SupervisorConfig}
 import akka.util.duration._
+import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 
 
 /**
@@ -30,7 +30,7 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation) 
       () => new RemoteMessageChannel(socketFactory(address))))
     val sendActor = Actor.actorOf(new RemoteMessageSendingActor(socketInitialisation))
     val receiveActor = Actor.actorOf(new ReceiveChannelMonitoring(socketInitialisation,
-      new WireMessageDispatcher(registry)))
+      new WireMessageDispatcher(registry, ClientSideSerialisation)))
     supervisor.link(socketInitialisation)
     supervisor.link(sendActor)
     supervisor.link(receiveActor)
@@ -111,7 +111,7 @@ class ReceiveChannelMonitoring(channelProvider: ActorRef, dispatcher: WireMessag
         val msg = channel.get.receive()
         if (msg != null) {
           if (msg.hasMessage) {
-            dispatcher.dispatchToActor(msg.getMessage, None)
+            dispatcher.dispatchToActor(msg.getMessage)
           } else if (msg != msg) {
             throw new Error("Not yet implemented")
           }
@@ -120,13 +120,11 @@ class ReceiveChannelMonitoring(channelProvider: ActorRef, dispatcher: WireMessag
 
       } catch {
         case e: IOException => {
-          channel.get.close()
+          channel.foreach(_.close())
           throw e
         }
       }
-
     }
-
   }
 }
 

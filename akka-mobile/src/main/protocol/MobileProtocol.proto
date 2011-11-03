@@ -38,7 +38,7 @@ message MobileMessageProtocol {
  */
 message RemoteActorRefProtocol {
   required string classOrServiceName = 1;
-  required AddressProtocol homeAddress = 2;
+  required AddressProtocol nodeAddress = 2;
 }
 
 /**
@@ -95,24 +95,10 @@ enum SerializationSchemeType {
   PROTOBUF = 5;
 }
 
-/**
- * Defines the type of the life-cycle of a supervised Actor.
- */
-enum LifeCycleType {
-  PERMANENT = 1;
-  TEMPORARY = 2;
-}
-
-/**
- * Defines the life-cycle of a supervised Actor.
- */
-message LifeCycleProtocol {
-  required LifeCycleType lifeCycle = 1;
-}
 
 enum AddressType{
     SERVICE_ADDRESS = 1;
-    DEVICE_ADDRESS = 1;
+    DEVICE_ADDRESS = 2;
 }
 
 /**
