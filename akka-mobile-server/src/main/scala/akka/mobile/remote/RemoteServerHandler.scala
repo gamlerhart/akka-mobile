@@ -5,8 +5,8 @@ import akka.mobile.protocol.MobileProtocol.ActorType._
 import akka.mobile.protocol.MobileProtocol.{MobileMessageProtocol, AkkaMobileProtocol}
 import java.util.concurrent.ConcurrentHashMap
 import akka.actor.{ActorRef, IllegalActorStateException}
-import org.jboss.netty.channel.{ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
 import java.net.InetSocketAddress
+import org.jboss.netty.channel.{ChannelFuture, ChannelFutureListener, ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
 
 /**
  *
@@ -57,7 +57,18 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
     }
 
     sender.foreach(si => {
-      clientChannels.put(si.asInstanceOf[RemoteDeviceActorRef].clientId, channel)
+      val clientId = si.asInstanceOf[RemoteDeviceActorRef].clientId;
+      val oldChannel = clientChannels.put(si.asInstanceOf[RemoteDeviceActorRef].clientId, channel)
+      if (oldChannel != channel) {
+        oldChannel.getCloseFuture.addListener(new ChannelFutureListener {
+          def operationComplete(future: ChannelFuture) {
+            clientChannels.remove(clientId)
+          }
+        })
+        if (null != oldChannel && oldChannel.isConnected) {
+          oldChannel.disconnect()
+        }
+      }
     })
 
     message.getActorInfo.getActorType match {
