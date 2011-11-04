@@ -16,10 +16,12 @@ trait RemoteClient {
 }
 
 object MobileRemoteClient {
-  lazy val client: RemoteClient = new MobileRemoteClient(None)
+  lazy val client: RemoteClient = throw new Error("Todo")
+
+  def createClient(device: DeviceOperations) = new MobileRemoteClient(None, device.clientId)
 }
 
-class MobileRemoteClient(var messaging: Option[RemoteMessaging]) extends RemoteClient with MessageSink {
+class MobileRemoteClient(var messaging: Option[RemoteMessaging], clientId: ClientId) extends RemoteClient with MessageSink {
 
   val msgSink: MessageSink = new MessageSink() {
     def send(clientId: Either[ClientId, InetSocketAddress],
@@ -37,10 +39,10 @@ class MobileRemoteClient(var messaging: Option[RemoteMessaging]) extends RemoteC
       }
     }
   }
-  private val serializer = new ClientSideSerialisation(msgSink)
+  private val serializer = new ClientSideSerialisation(msgSink, clientId)
 
   if (messaging.isEmpty) {
-    messaging = Some(RemoteMessaging(msgSink))
+    messaging = Some(RemoteMessaging(serializer))
   }
 
   def actorFor(serviceId: String, hostname: String, port: Int) = {

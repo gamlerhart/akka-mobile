@@ -5,6 +5,7 @@ import org.scalatest.matchers.ShouldMatchers
 import com.eaio.uuid.UUID
 import akka.mobile.protocol.MobileProtocol._
 import akka.mobile.protocol.MobileProtocol
+import akka.mobile.testutils.MockSerialisation
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -66,6 +67,9 @@ trait TestMesssageProducer {
         .setId("remote-actor")
         .setTarget("a.class.name")
     })
+    mobileMsg.setSender(RemoteActorRefProtocol.newBuilder()
+      .setClassOrServiceName("mock-service-id")
+      .setNodeAddress(MockSerialisation.mockAddress()))
     AkkaMobileProtocol.newBuilder().setMessage(mobileMsg).build()
   }
 

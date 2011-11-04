@@ -9,7 +9,7 @@ import akka.util.Duration
 import java.io._
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{TimeUnit, CountDownLatch}
-import akka.mobile.testutils.BlackHoleMessageSink
+import akka.mobile.testutils.MockSerialisation
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -25,7 +25,7 @@ class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssagePro
       val channelFactory = RemoteMessaging(a => {
         callCounter.incrementAndGet()
         socket
-      }, BlackHoleMessageSink)
+      }, MockSerialisation)
       channelFactory.channelFor(new InetSocketAddress("localhost", 8080)) ! SendMessage(buildMockMsg(), None)
       channelFactory.channelFor(new InetSocketAddress("localhost", 8080)) ! SendMessage(buildMockMsg(), None)
 
@@ -42,10 +42,10 @@ class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssagePro
       val toTest = RemoteMessaging(a => new SocketRepresentation {
         def close() {}
 
-        def in = inS
+        def in = new ByteArrayInputStream(Array())
 
         def out = outS
-      }, BlackHoleMessageSink)
+      }, MockSerialisation)
       val msgChannel = toTest.channelFor(MOCK_ADDRESS)
       val msg = buildMockMsg()
       msgChannel ! SendMessage(msg, None)
@@ -65,7 +65,7 @@ class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssagePro
           counter.countDown()
           throw new IOException()
         }
-      }, BlackHoleMessageSink).channelFor(MOCK_ADDRESS)
+      }, MockSerialisation).channelFor(MOCK_ADDRESS)
 
       channel ! SendMessage(buildMockMsg(), None)
       channel ! SendMessage(buildMockMsg(), None)
@@ -81,12 +81,12 @@ class CanDoRemoteMessaging extends Spec with ShouldMatchers with TestMesssagePro
   }
   describe("With the remote message actor") {
     it("you can get an for host and port") {
-      val toTest = RemoteMessaging(a => new MockSocket, BlackHoleMessageSink)
+      val toTest = RemoteMessaging(a => new MockSocket, MockSerialisation)
       val msgChannel = toTest.channelFor(MOCK_ADDRESS)
       msgChannel should not be (null)
     }
     it("you can get the same actor for same host & ip") {
-      val toTest = RemoteMessaging(a => new MockSocket, BlackHoleMessageSink)
+      val toTest = RemoteMessaging(a => new MockSocket, MockSerialisation)
       val msgC1 = toTest.channelFor(MOCK_ADDRESS)
       val msgC2 = toTest.channelFor(MOCK_ADDRESS)
       msgC1 should be(msgC2)

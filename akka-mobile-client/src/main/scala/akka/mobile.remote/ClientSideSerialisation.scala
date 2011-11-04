@@ -9,11 +9,11 @@ import java.net.InetSocketAddress
  * @since 03.11.11
  */
 
-class ClientSideSerialisation(messageSender: MessageSink) extends Serialisation {
+class ClientSideSerialisation(messageSender: MessageSink, deviceAddress: ClientId) extends Serialisation {
   def toAddressProtocol(actorRef: ActorRef) = {
     AddressProtocol.newBuilder
       .setType(AddressType.DEVICE_ADDRESS)
-      .setDeviceAddress(DeviceAddress.newBuilder().setAppId("mock").setDeviceID("mock"))
+      .setDeviceAddress(DeviceAddress.newBuilder().setAppId(deviceAddress.applicationId).setDeviceID(deviceAddress.clientId))
       .build
   }
 

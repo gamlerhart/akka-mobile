@@ -7,6 +7,7 @@ import android.os.Handler
 import android.widget.TextView
 import android.content.Context
 import android.app.Activity
+import akka.mobile.remote.MobileRemoteClient
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -18,7 +19,7 @@ class MyActor() extends Actor {
 
   protected def receive = {
     case "Start" => {
-      val remote = Actor.remote;
+      val remote = MobileRemoteClient.client;
       val actor = remote.actorFor("echo", "10.0.2.2", 2552);
 
 
