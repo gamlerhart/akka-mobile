@@ -27,7 +27,17 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
 
     def sendResponse(clientId: Either[ClientId, InetSocketAddress],
                      responseFor: UUID, result: Right[Throwable, Any]): Unit = {
-      throw new Error("TODO")
+
+      clientId match {
+        case Right(remoteAddress) => {
+          val msg = serializer.toWireProtocol(
+            serializer.response(responseFor, result))
+          val remoteChannel = channelFor(remoteAddress)
+          remoteChannel ! SendMessage(msg, None)
+        }
+
+        case Left(_) => throw new IllegalArgumentException("Cannot send to a client from a client")
+      }
     }
 
     def send(clientId: Either[ClientId, InetSocketAddress],
