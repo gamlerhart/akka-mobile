@@ -12,11 +12,11 @@ object MyBuild extends Build {
     scalaVersion := "2.9.1"
   )
 
-  lazy val root = Project("root", file(".")) aggregate (akkamobile)
+  lazy val root = Project("root", file(".")) aggregate (akkamobileClient)
 
-  lazy val akkamobile: Project = Project(
-    id = "akka-mobile",
-    base = file("./akka-mobile"),
+  lazy val akkamobileClient: Project = Project(
+    id = "akka-mobile-client",
+    base = file("./akka-mobile-client"),
     settings = defaultSettings ++ Seq(
       unmanagedBase <<= baseDirectory {
         base => base / "lib"
@@ -27,7 +27,7 @@ object MyBuild extends Build {
   lazy val akkamobileServer: Project = Project(
     id = "akka-mobile-server",
     base = file("./akka-mobile-server"),
-    dependencies = Seq(akkamobile),
+    dependencies = Seq(akkamobileClient),
     settings = defaultSettings ++ Seq(
       libraryDependencies ++= Seq(akkaActors, akkaRemoteActors, netty, scalaTest, akkaTestKit)
     )
@@ -36,9 +36,9 @@ object MyBuild extends Build {
   lazy val akkamobileTest: Project = Project(
     id = "akka-mobile-test",
     base = file("./akka-mobile-test"),
-    dependencies = Seq(akkamobile, akkamobileServer),
+    dependencies = Seq(akkamobileClient, akkamobileServer),
     settings = defaultSettings ++ Seq(
-      libraryDependencies ++= Seq(akkaActors, netty, scalaTest, akkaTestKit)
+      libraryDependencies ++= Seq(akkaActors, akkaRemoteActors, netty, scalaTest, akkaTestKit)
     ))
 
 

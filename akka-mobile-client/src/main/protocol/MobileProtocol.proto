@@ -1,0 +1,129 @@
+/**
+ * Copyright (C) 2009-2011 Scalable Solutions AB <http://scalablesolutions.se>
+ *
+ * Modified by Roman Stoffel roman.stoffel@gamlor.info
+ */
+
+option java_package = "akka.mobile.protocol";
+option optimize_for = LITE_RUNTIME;
+
+/******************************************
+  Compile with:
+  cd ./akka-remote/src/main/protocol
+  protoc RemoteProtocol.proto --java_out ../java
+*******************************************/
+
+message AkkaMobileProtocol {
+  optional MobileMessageProtocol message = 1;
+}
+
+/**
+ * Defines a remote message.
+ */
+message MobileMessageProtocol {
+  required UuidProtocol uuid = 1;
+  required ActorInfoProtocol actorInfo = 2;
+  required bool oneWay = 3;
+  optional MessageProtocol message = 4;
+  optional ExceptionProtocol exception = 5;
+  optional UuidProtocol supervisorUuid = 6;
+  optional RemoteActorRefProtocol sender = 7;
+  repeated MetadataEntryProtocol metadata = 8;
+  optional string cookie = 9;
+}
+
+/**
+ * Defines a remote ActorRef that "remembers" and uses its original Actor instance
+ * on the original node.
+ */
+message RemoteActorRefProtocol {
+  required string classOrServiceName = 1;
+  required AddressProtocol nodeAddress = 2;
+}
+
+/**
+ * Defines a message.
+ */
+message MessageProtocol {
+  required SerializationSchemeType serializationScheme = 1;
+  required bytes message = 2;
+  optional bytes messageManifest = 3;
+}
+
+/**
+ * Defines the actor info.
+ */
+message ActorInfoProtocol {
+  required string target = 1;
+  required ActorType actorType = 2;
+  optional string id = 3;
+}
+
+/**
+ * Defines a UUID.
+ */
+message UuidProtocol {
+  required uint64 high = 1;
+  required uint64 low = 2;
+}
+
+/**
+ * Defines a meta data entry.
+ */
+message MetadataEntryProtocol {
+  required string key = 1;
+  required bytes value = 2;
+}
+
+/**
+ * Defines the actor type.
+ */
+enum ActorType {
+  SCALA_ACTOR = 1;
+  JAVA_ACTOR = 2;
+  TYPED_ACTOR = 3;
+}
+
+/**
+ * Defines the serialization scheme used to serialize the message and/or Actor instance.
+ */
+enum SerializationSchemeType {
+  JAVA = 1;
+  SBINARY = 2;
+  SCALA_JSON = 3;
+  JAVA_JSON = 4;
+  PROTOBUF = 5;
+}
+
+
+enum AddressType{
+    SERVICE_ADDRESS = 1;
+    DEVICE_ADDRESS = 2;
+}
+
+/**
+ * Defines a remote address.
+ */
+message AddressProtocol {
+  required AddressType type = 1;
+  optional DeviceAddress deviceAddress = 2;
+
+}
+
+
+/**
+  * A device is a mobile and changes its address and port all the time
+  * Therefore it is identified with its app / service name
+  */
+message DeviceAddress{
+  required string deviceID = 1;
+  required string appId = 2;
+}
+
+/**
+ * Defines an exception.
+ */
+message ExceptionProtocol {
+  required string classname  = 1;
+  required string message = 2;
+}

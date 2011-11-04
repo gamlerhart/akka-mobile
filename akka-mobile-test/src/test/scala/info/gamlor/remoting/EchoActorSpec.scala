@@ -6,7 +6,8 @@ import TestServer._
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.{ActorRef, Actor}
 import java.util.concurrent.{CountDownLatch, TimeUnit}
-import akka.mobile.remote.MobileRemoteClient
+import akka.mobile.testutils.{NetworkUtils, TestDevice}
+import akka.mobile.remote.{NettyRemoteServer, MobileRemoteClient}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -15,8 +16,8 @@ import akka.mobile.remote.MobileRemoteClient
 
 class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
 
-
-  "The Actor must " must {
+  val client = MobileRemoteClient.createClient(TestDevice)
+  "The Actor " must {
 
     "receives message " in {
 
@@ -24,7 +25,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
         val barrier = new CountDownLatch(1)
         val local = Actor.actorOf(new ReceiveCheckActor(Some(barrier))).start()
         ctx.register("echo", local)
-        val echo = MobileRemoteClient.client.actorFor("echo", "localhost", ctx.port)
+        val echo = client.actorFor("echo", "localhost", ctx.port)
         echo ! "Hello-Receive-Only"
 
 
@@ -38,7 +39,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
       withRunningServer(ctx => {
         val local = Actor.actorOf(new ReceiveCheckActor(None)).start()
         ctx.register("echo", local)
-        val echo = MobileRemoteClient.client.actorFor("echo", "localhost", ctx.port)
+        val echo = client.actorFor("echo", "localhost", ctx.port)
         echo ! "Ask"
 
 
@@ -50,7 +51,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
       withRunningServer(ctx => {
         val local = Actor.actorOf(new ReceiveCheckActor(None)).start()
         ctx.register("echo", local)
-        val remoteEchoActor = MobileRemoteClient.client.actorFor("echo", "localhost", ctx.port)
+        val remoteEchoActor = client.actorFor("echo", "localhost", ctx.port)
         val finishedBarrier = new CountDownLatch(1)
         val clientActor = Actor.actorOf(new ClientReply(remoteEchoActor, finishedBarrier)).start();
 
@@ -59,6 +60,22 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
 
         finishedBarrier.await(5, TimeUnit.SECONDS) should be(true)
       })
+    }
+    "can bind server to 0.0.0.0" in {
+
+      val port = NetworkUtils.findFreePort()
+      val server = NettyRemoteServer.start("0.0.0.0", port);
+      val local = Actor.actorOf(new ReceiveCheckActor(None)).start()
+      server.register("echo", local)
+      val remoteEchoActor = client.actorFor("echo", "localhost", port)
+      val finishedBarrier = new CountDownLatch(1)
+      val clientActor = Actor.actorOf(new ClientReply(remoteEchoActor, finishedBarrier)).start();
+
+      clientActor ! "Start"
+
+
+      finishedBarrier.await(5, TimeUnit.SECONDS) should be(true)
+      server.shutdownServerModule();
     }
 
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="akka-mobile" default="compileAndCopyToExampleProject">
+
+    <target name="compileAndCopyToExampleProject" depends="sbt-package">
+        <copy file="akka-mobile-client/target/scala-2.9.1/akka-mobile-client_2.9.1-1.0-SNAPSHOT.jar"
+              tofile="PlayGroundApp/akka/included/akka-mobile-client_2.9.1-1.0-SNAPSHOT.jar" overwrite="true"/>
+        <copy file="akka-mobile-client/lib/protobuf-java-2.4.1-lite.jar"
+              tofile="PlayGroundApp/akka/included/protobuf-java-2.4.1-lite.jar" overwrite="true"/>
+    </target>
+
+    <target name="sbt-package">
+        <exec executable="sbt.bat">
+            <arg value="package"/>
+        </exec>
+    </target>
+
+</project>

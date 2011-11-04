@@ -3,26 +3,27 @@ package info.gamlor.remoting
 import org.scalatest.Spec
 import akka.config.Supervision.{SupervisorConfig, OneForOneStrategy}
 import akka.actor.{ActorRef, Supervisor, Actor}
+import akka.mobile.remote.NettyRemoteServer
 
 /**
  * @author roman.stoffel@gamlor.info
  * @since 21.10.11
  */
 //
-//class RunServer extends Spec {
-//
-//  describe("Test Server") {
-//    it("is running") {
-//      val server = NettyRemoteServer.start("localhost", 2552);
-//
-//
-//      val local = Actor.actorOf(new ReceiveCheckActor(None)).start();
-//      server.register("echo", local);
-//
-//    }
-//  }
-//}
-//
+class RunServer extends Spec {
+
+  describe("Test Server") {
+    it("is running") {
+      val server = NettyRemoteServer.start("localhost", 2552);
+
+
+      val local = Actor.actorOf(new ReceiveCheckActor(None)).start();
+      server.register("echo", local);
+
+    }
+  }
+}
+
 class PlayAround extends Spec {
 
   class KilledMyselfException extends Exception

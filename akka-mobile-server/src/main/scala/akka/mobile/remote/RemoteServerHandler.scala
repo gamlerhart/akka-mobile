@@ -5,8 +5,8 @@ import akka.mobile.protocol.MobileProtocol.ActorType._
 import akka.mobile.protocol.MobileProtocol.{MobileMessageProtocol, AkkaMobileProtocol}
 import java.util.concurrent.ConcurrentHashMap
 import akka.actor.{ActorRef, IllegalActorStateException}
-import org.jboss.netty.channel.{ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
 import java.net.InetSocketAddress
+import org.jboss.netty.channel.{ChannelFuture, ChannelFutureListener, ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
 
 /**
  *
@@ -50,18 +50,30 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
 
   private def dispatchMessage(message: MobileMessageProtocol, channel: NettyChannel) {
 
+    val ctxInfo = channel.getRemoteAddress.asInstanceOf[InetSocketAddress]
     val sender = if (message.hasSender) {
-      Some(serializer.deSerializeActorRef(message.getSender))
+      Some(serializer.deSerializeActorRef(message.getSender, ctxInfo))
     } else {
       None
     }
 
     sender.foreach(si => {
-      clientChannels.put(si.asInstanceOf[RemoteDeviceActorRef].clientId, channel)
+      val clientId = si.asInstanceOf[RemoteDeviceActorRef].clientId;
+      val oldChannel = clientChannels.put(si.asInstanceOf[RemoteDeviceActorRef].clientId, channel)
+      if (oldChannel != channel) {
+        channel.getCloseFuture.addListener(new ChannelFutureListener {
+          def operationComplete(future: ChannelFuture) {
+            clientChannels.remove(clientId)
+          }
+        })
+        if (null != oldChannel && oldChannel.isConnected) {
+          oldChannel.disconnect()
+        }
+      }
     })
 
     message.getActorInfo.getActorType match {
-      case SCALA_ACTOR ⇒ dispatcher.dispatchToActor(message)
+      case SCALA_ACTOR ⇒ dispatcher.dispatchToActor(message, ctxInfo)
       case TYPED_ACTOR ⇒ throw new IllegalActorStateException("ActorType TYPED_ACTOR is currently not supported")
       case JAVA_ACTOR ⇒ throw new IllegalActorStateException("ActorType JAVA_ACTOR is currently not supported")
       case other ⇒ throw new IllegalActorStateException("Unknown ActorType [" + other + "]")
