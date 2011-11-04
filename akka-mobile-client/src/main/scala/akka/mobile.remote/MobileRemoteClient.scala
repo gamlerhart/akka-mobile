@@ -3,6 +3,7 @@ package akka.mobile.remote
 import akka.actor._
 import java.net.InetSocketAddress
 import java.lang.IllegalArgumentException
+import com.eaio.uuid.UUID
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -27,12 +28,14 @@ class MobileRemoteClient(var messaging: Option[RemoteMessaging], clientId: Clien
 
   val msgSink: MessageSink = new MessageSink() {
     def send(clientId: Either[ClientId, InetSocketAddress],
-             serviceId: String, message: Any, senderOption: Option[ActorRef]) {
+             serviceId: String, message: Any,
+             senderOption: Option[ActorRef],
+             replyUUID: Option[UUID]) {
       clientId match {
         case Right(remoteAddress) => {
           messaging.get.registry.registerActor("uuid:" + senderOption.get.uuid.toString, senderOption.get)
           val theMessage = serializer.toWireProtocol(
-            serializer.oneWayMessageToActor(serviceId, senderOption, message))
+            serializer.messageToActor(serviceId, senderOption, message, replyUUID))
           val remoteChannel = messaging.get.channelFor(remoteAddress)
           remoteChannel ! SendMessage(theMessage, senderOption)
 
@@ -44,7 +47,7 @@ class MobileRemoteClient(var messaging: Option[RemoteMessaging], clientId: Clien
   private val serializer = new ClientSideSerialisation(msgSink, clientId)
 
   if (messaging.isEmpty) {
-    messaging = Some(RemoteMessaging(serializer))
+    messaging = Some(RemoteMessaging(serializer, msgSink))
   }
 
   def actorFor(serviceId: String, hostname: String, port: Int) = {

@@ -1,11 +1,11 @@
 package akka.mobile.remote
 
-import com.eaio.uuid.UUID
 import akka.mobile.protocol.MobileProtocol._
 import com.google.protobuf.ByteString
 import akka.actor.{LocalActorRef, ActorRef}
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 import java.net.InetSocketAddress
+import com.eaio.uuid.UUID
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -21,13 +21,14 @@ trait Serialisation {
     arp.build
   }
 
-  def oneWayMessageToActor(actorID: String, sender: Option[ActorRef], msg: Any) = {
+  def messageToActor(actorID: String, sender: Option[ActorRef],
+                     msg: Any, replyUUID: Option[UUID]) = {
     val serializeUUID = (uuid: UUID) => {
       UuidProtocol.newBuilder().setHigh(uuid.getTime).setLow(uuid.getClockSeqAndNode)
     }
     val builder = MobileMessageProtocol.newBuilder()
-      .setUuid(serializeUUID(new UUID()))
-      .setOneWay(true)
+      .setUuid(serializeUUID(replyUUID.getOrElse(new UUID())))
+      .setOneWay(replyUUID.isEmpty)
       .setMessage(serializeMsg(msg))
       .setActorInfo({
       ActorInfoProtocol.newBuilder()
@@ -74,6 +75,10 @@ trait Serialisation {
     msgBuilder.setSerializationScheme(SerializationSchemeType.JAVA)
     msgBuilder.setMessage(ByteString.copyFrom(javaSerialize(msg)))
     msgBuilder;
+  }
+
+  def deSerializeUUID(uuid: UuidProtocol) = {
+    new UUID(uuid.getHigh, uuid.getLow)
   }
 
 

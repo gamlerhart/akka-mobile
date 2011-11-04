@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap
 import akka.actor.{ActorRef, IllegalActorStateException}
 import java.net.InetSocketAddress
 import org.jboss.netty.channel.{ChannelFuture, ChannelFutureListener, ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
+import com.eaio.uuid.UUID
 
 /**
  *
@@ -19,7 +20,7 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
   extends SimpleChannelUpstreamHandler with MessageSink {
   private val clientChannels = new ConcurrentHashMap[ClientId, NettyChannel]()
   private val serializer = new ServerSideSerialisation(this, serverInfo)
-  private val dispatcher = new WireMessageDispatcher(registry, new ServerSideSerialisation(this, serverInfo))
+  private val dispatcher = new WireMessageDispatcher(registry, this, new ServerSideSerialisation(this, serverInfo))
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) {
     event.getMessage match {
@@ -35,7 +36,8 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
   override def channelOpen(ctx: ChannelHandlerContext, event: ChannelStateEvent) = channels.add(ctx.getChannel)
 
 
-  def send(clientId: Either[ClientId, InetSocketAddress], serviceId: String, message: Any, sender: Option[ActorRef]) {
+  def send(clientId: Either[ClientId, InetSocketAddress], serviceId: String,
+           message: Any, sender: Option[ActorRef], replyUUID: Option[UUID]) {
     val backChannel = clientChannels.get(clientId.left.get)
 
     sender.foreach(si => {
@@ -43,7 +45,7 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
     })
 
     val msg = serializer.toWireProtocol(
-      serializer.oneWayMessageToActor(serviceId, sender, message))
+      serializer.messageToActor(serviceId, sender, message, replyUUID))
     backChannel.write(msg);
 
   }

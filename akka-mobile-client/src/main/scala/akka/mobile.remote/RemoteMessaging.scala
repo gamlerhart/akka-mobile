@@ -14,7 +14,8 @@ import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
  * @since 27.10.11
  */
 
-class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation, serializer: Serialisation) {
+class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
+                      messageSink: MessageSink, serializer: Serialisation) {
   val registry: Registry = new Registry
   private val messangers = scala.collection.mutable.Map[InetSocketAddress, ActorRef]()
   private val supervisor = Supervisor(SupervisorConfig(
@@ -30,7 +31,7 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation, 
       () => new RemoteMessageChannel(socketFactory(address))))
     val sendActor = Actor.actorOf(new RemoteMessageSendingActor(socketInitialisation))
     val receiveActor = Actor.actorOf(new ReceiveChannelMonitoring(socketInitialisation,
-      new WireMessageDispatcher(registry, serializer), address))
+      new WireMessageDispatcher(registry, messageSink, serializer), address))
     supervisor.link(socketInitialisation)
     supervisor.link(sendActor)
     supervisor.link(receiveActor)
@@ -50,11 +51,11 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation, 
 object RemoteMessaging {
   val DEFAULT_TCP_SOCKET_FACTOR = (address: InetSocketAddress) => new TCPSocket(address)
 
-  def apply(serialisation: Serialisation) = new RemoteMessaging(DEFAULT_TCP_SOCKET_FACTOR, serialisation)
+  def apply(serialisation: Serialisation, messageSink: MessageSink) = new RemoteMessaging(DEFAULT_TCP_SOCKET_FACTOR, messageSink, serialisation)
 
 
-  def apply(socketFactory: InetSocketAddress => SocketRepresentation, serialisation: Serialisation)
-  = new RemoteMessaging(socketFactory, serialisation)
+  def apply(socketFactory: InetSocketAddress => SocketRepresentation, messageSink: MessageSink, serialisation: Serialisation)
+  = new RemoteMessaging(socketFactory, messageSink, serialisation)
 }
 
 
