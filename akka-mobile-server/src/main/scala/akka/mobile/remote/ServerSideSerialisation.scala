@@ -11,6 +11,7 @@ import java.net.InetSocketAddress
 case class ServerInfo(hostName: String, port: Int)
 
 class ServerSideSerialisation(msgSink: MessageSink, serverInfo: ServerInfo) extends Serialisation {
+
   def toAddressProtocol(actorRef: ActorRef) = {
     AddressProtocol.newBuilder
       .setType(AddressType.SERVICE_ADDRESS)
@@ -18,7 +19,7 @@ class ServerSideSerialisation(msgSink: MessageSink, serverInfo: ServerInfo) exte
 
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, ctxInfo: InetSocketAddress) = {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, clientID: Either[ClientId, InetSocketAddress]) = {
     val remoteActorId = refInfo.getClassOrServiceName
     val homeAddress = refInfo.getNodeAddress
     homeAddress.getType match {

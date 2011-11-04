@@ -2,7 +2,7 @@ package akka.mobile.remote
 
 import akka.actor.ActorRef
 import java.net.InetSocketAddress
-import akka.dispatch.{CompletableFuture, ActorCompletableFuture}
+import akka.dispatch.CompletableFuture
 import com.eaio.uuid.UUID
 
 /**
@@ -16,11 +16,12 @@ trait MessageSink {
   }
 
   def ask(clientId: Right[Nothing, InetSocketAddress], serviceId: String,
-          message: Any, sender: Option[ActorRef], future: Option[ActorCompletableFuture]): CompletableFuture[Any]
-  = {
-    val r = future.getOrElse(new ActorCompletableFuture)
-    send(clientId, serviceId, message, sender, Some(new UUID()))
-    r
+          message: Any, sender: Option[ActorRef], future: CompletableFuture[Any])
+  : CompletableFuture[Any] = {
+    val requestID = new UUID()
+    registerFuture(requestID, future)
+    send(clientId, serviceId, message, sender, Some(requestID))
+    future;
   }
 
   def send(clientId: Either[ClientId, InetSocketAddress],
@@ -33,4 +34,7 @@ trait MessageSink {
            serviceId: String, message: Any,
            sender: Option[ActorRef], replyUUID: Option[UUID]): Unit
 
+  def sendResponse(clientId: Either[ClientId, InetSocketAddress], responseFor: UUID, result: Right[Throwable, Any])
+
+  def registerFuture(uuid: UUID, future: CompletableFuture[Any])
 }

@@ -27,6 +27,12 @@ object MobileRemoteClient {
 class MobileRemoteClient(var messaging: Option[RemoteMessaging], clientId: ClientId) extends RemoteClient {
 
   val msgSink: MessageSink = new MessageSink() {
+
+    def sendResponse(clientId: Either[ClientId, InetSocketAddress],
+                     responseFor: UUID, result: Right[Throwable, Any]) = {
+      throw new Error("TODO")
+    }
+
     def send(clientId: Either[ClientId, InetSocketAddress],
              serviceId: String, message: Any,
              senderOption: Option[ActorRef],
@@ -54,7 +60,8 @@ class MobileRemoteClient(var messaging: Option[RemoteMessaging], clientId: Clien
     ClientRemoteActorRef(new InetSocketAddress(hostname, port), serviceId, msgSink)
   }
 
-  def actorFor(serviceId: String, className: String, timeout: Long, hostname: String, port: Int, loader: Option[ClassLoader]) = {
+  def actorFor(serviceId: String, className: String, timeout: Long,
+               hostname: String, port: Int, loader: Option[ClassLoader]) = {
     ClientRemoteActorRef(new InetSocketAddress(hostname, port), serviceId, msgSink)
   }
 

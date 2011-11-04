@@ -16,4 +16,8 @@ object BlackHoleMessageSink extends MessageSink {
            sender: Option[ActorRef], replyId: Option[UUID]) = {
 
   }
+
+  def sendResponse(clientId: Either[ClientId, InetSocketAddress], responseFor: UUID, result: Right[Throwable, Any]) {
+
+  }
 }

@@ -3,7 +3,7 @@ package akka.mobile.remote
 import java.util.Map
 import akka.actor._
 import java.net.InetSocketAddress
-import akka.dispatch.ActorCompletableFuture
+import akka.dispatch.{DefaultCompletableFuture, ActorCompletableFuture}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -48,11 +48,11 @@ case class ClientRemoteActorRef(address: InetSocketAddress,
                                                            timeout: Long, channel: UntypedChannel): ActorCompletableFuture = {
     val chSender = channel match {
       case ref: ActorRef ⇒ Some(ref)
-      case _ ⇒ None
+      case _ => None
     }
     val chFuture = channel match {
-      case f: ActorCompletableFuture ⇒ Some(f)
-      case _ ⇒ None
+      case f: ActorCompletableFuture => f
+      case _ => new DefaultCompletableFuture[Any](timeout)
     }
     val future = messageSender.ask(Right(homeAddress.get), serviceId, message, chSender, chFuture)
     ActorCompletableFuture(future)

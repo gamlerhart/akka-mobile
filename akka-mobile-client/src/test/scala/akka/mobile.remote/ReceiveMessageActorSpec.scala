@@ -31,8 +31,8 @@ class ReceiveMessageActorSpec extends Spec with ShouldMatchers with TestKit with
       msg.writeDelimitedTo(socket.out)
 
       val expectMsg = new CountDownLatch(2);
-      val expectMsgMock = new WireMessageDispatcher(new Registry, BlackHoleMessageSink, MockSerialisation) {
-        override def dispatchToActor(message: MobileMessageProtocol, ctxInfo: InetSocketAddress) {
+      val expectMsgMock = new WireMessageDispatcher(new Registry, new FutureResultHandling, BlackHoleMessageSink, MockSerialisation) {
+        override def dispatchMessage(message: MobileMessageProtocol, clientID: Either[ClientId, InetSocketAddress]) {
           expectMsg.countDown()
         }
       }
@@ -48,7 +48,8 @@ class ReceiveMessageActorSpec extends Spec with ShouldMatchers with TestKit with
     }
     it("closes on failure") {
       val closedConnection = new CountDownLatch(1);
-      val expectMsgMock = new WireMessageDispatcher(new Registry, BlackHoleMessageSink, MockSerialisation)
+      val expectMsgMock = new WireMessageDispatcher(new Registry, new FutureResultHandling,
+        BlackHoleMessageSink, MockSerialisation)
 
       val initializer = Actor.actorOf(ResourceInitializeActor(() => new ThrowOnReceive() {
         override def close() {

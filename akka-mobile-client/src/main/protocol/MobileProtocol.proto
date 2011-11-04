@@ -22,13 +22,13 @@ message AkkaMobileProtocol {
  */
 message MobileMessageProtocol {
   required UuidProtocol uuid = 1;
-  required ActorInfoProtocol actorInfo = 2;
-  required bool oneWay = 3;
-  optional UuidProtocol answerFor =8;
-  optional MessageProtocol message = 4;
-  optional ExceptionProtocol exception = 5;
-  optional RemoteActorRefProtocol sender = 6;
-  repeated MetadataEntryProtocol metadata = 9;
+  required bool oneWay = 2;
+  optional ActorInfoProtocol actorInfo = 3;
+  optional UuidProtocol answerFor =4;
+  optional MessageProtocol message = 5;
+  optional ExceptionProtocol exception =6;
+  optional RemoteActorRefProtocol sender = 7;
+  repeated MetadataEntryProtocol metadata = 8;
 }
 
 /**

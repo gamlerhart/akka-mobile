@@ -20,7 +20,8 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
   extends SimpleChannelUpstreamHandler with MessageSink {
   private val clientChannels = new ConcurrentHashMap[ClientId, NettyChannel]()
   private val serializer = new ServerSideSerialisation(this, serverInfo)
-  private val dispatcher = new WireMessageDispatcher(registry, this, new ServerSideSerialisation(this, serverInfo))
+  private val futures = new FutureResultHandling
+  private val dispatcher = new WireMessageDispatcher(registry, futures, this, new ServerSideSerialisation(this, serverInfo))
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) {
     event.getMessage match {
@@ -35,6 +36,17 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
 
   override def channelOpen(ctx: ChannelHandlerContext, event: ChannelStateEvent) = channels.add(ctx.getChannel)
 
+
+  def sendResponse(clientId: Either[ClientId, InetSocketAddress],
+                   responseFor: UUID, result: Right[Throwable, Any]) {
+
+    val backChannel = clientChannels.get(clientId.left.get)
+
+
+    val msg = serializer.toWireProtocol(
+      serializer.response(responseFor, result))
+    backChannel.write(msg);
+  }
 
   def send(clientId: Either[ClientId, InetSocketAddress], serviceId: String,
            message: Any, sender: Option[ActorRef], replyUUID: Option[UUID]) {
@@ -53,29 +65,27 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
   private def dispatchMessage(message: MobileMessageProtocol, channel: NettyChannel) {
 
     val ctxInfo = channel.getRemoteAddress.asInstanceOf[InetSocketAddress]
-    val sender = if (message.hasSender) {
-      Some(serializer.deSerializeActorRef(message.getSender, ctxInfo))
+    val senderInfo = if (message.hasSender) {
+      serializer.deSerializeActorRef(message.getSender, Right(ctxInfo))
     } else {
-      None
+      throw new Error("Server cannot deal without client info")
     }
 
-    sender.foreach(si => {
-      val clientId = si.asInstanceOf[RemoteDeviceActorRef].clientId;
-      val oldChannel = clientChannels.put(si.asInstanceOf[RemoteDeviceActorRef].clientId, channel)
-      if (oldChannel != channel) {
-        channel.getCloseFuture.addListener(new ChannelFutureListener {
-          def operationComplete(future: ChannelFuture) {
-            clientChannels.remove(clientId)
-          }
-        })
-        if (null != oldChannel && oldChannel.isConnected) {
-          oldChannel.disconnect()
+    val clientId = senderInfo.asInstanceOf[RemoteDeviceActorRef].clientId;
+    val oldChannel = clientChannels.put(clientId, channel)
+    if (oldChannel != channel) {
+      channel.getCloseFuture.addListener(new ChannelFutureListener {
+        def operationComplete(future: ChannelFuture) {
+          clientChannels.remove(clientId)
         }
+      })
+      if (null != oldChannel && oldChannel.isConnected) {
+        oldChannel.disconnect()
       }
-    })
+    }
 
     message.getActorInfo.getActorType match {
-      case SCALA_ACTOR ⇒ dispatcher.dispatchToActor(message, ctxInfo)
+      case SCALA_ACTOR ⇒ dispatcher.dispatchMessage(message, Left(clientId))
       case TYPED_ACTOR ⇒ throw new IllegalActorStateException("ActorType TYPED_ACTOR is currently not supported")
       case JAVA_ACTOR ⇒ throw new IllegalActorStateException("ActorType JAVA_ACTOR is currently not supported")
       case other ⇒ throw new IllegalActorStateException("Unknown ActorType [" + other + "]")

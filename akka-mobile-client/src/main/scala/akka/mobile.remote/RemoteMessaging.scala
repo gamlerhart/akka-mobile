@@ -17,6 +17,7 @@ import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
                       messageSink: MessageSink, serializer: Serialisation) {
   val registry: Registry = new Registry
+  val futures: FutureResultHandling = new FutureResultHandling
   private val messangers = scala.collection.mutable.Map[InetSocketAddress, ActorRef]()
   private val supervisor = Supervisor(SupervisorConfig(
     AllForOneStrategy(List(classOf[Exception]), 5, 10000), Nil
@@ -31,7 +32,7 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
       () => new RemoteMessageChannel(socketFactory(address))))
     val sendActor = Actor.actorOf(new RemoteMessageSendingActor(socketInitialisation))
     val receiveActor = Actor.actorOf(new ReceiveChannelMonitoring(socketInitialisation,
-      new WireMessageDispatcher(registry, messageSink, serializer), address))
+      new WireMessageDispatcher(registry, futures, messageSink, serializer), address))
     supervisor.link(socketInitialisation)
     supervisor.link(sendActor)
     supervisor.link(receiveActor)
@@ -115,7 +116,7 @@ class ReceiveChannelMonitoring(channelProvider: ActorRef,
         val msg = channel.get.receive()
         if (msg != null) {
           if (msg.hasMessage) {
-            dispatcher.dispatchToActor(msg.getMessage, ctxInfo)
+            dispatcher.dispatchMessage(msg.getMessage, Right(ctxInfo))
           } else if (msg != msg) {
             throw new Error("Not yet implemented")
           }
