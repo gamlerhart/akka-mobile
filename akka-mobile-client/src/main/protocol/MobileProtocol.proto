@@ -24,12 +24,11 @@ message MobileMessageProtocol {
   required UuidProtocol uuid = 1;
   required ActorInfoProtocol actorInfo = 2;
   required bool oneWay = 3;
+  optional UuidProtocol answerFor =8;
   optional MessageProtocol message = 4;
   optional ExceptionProtocol exception = 5;
-  optional UuidProtocol supervisorUuid = 6;
-  optional RemoteActorRefProtocol sender = 7;
-  repeated MetadataEntryProtocol metadata = 8;
-  optional string cookie = 9;
+  optional RemoteActorRefProtocol sender = 6;
+  repeated MetadataEntryProtocol metadata = 9;
 }
 
 /**

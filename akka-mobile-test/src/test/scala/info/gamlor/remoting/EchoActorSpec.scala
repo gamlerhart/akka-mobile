@@ -46,6 +46,17 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
         expectMsg("Answer for Ask")
       })
     }
+    "get answer " in {
+
+      withRunningServer(ctx => {
+        val local = Actor.actorOf(new ReceiveCheckActor(None)).start()
+        ctx.register("echo", local)
+        val echo = client.actorFor("echo", "localhost", ctx.port)
+        val response = echo ? "Ask"
+
+        response.get should be("Answer for Ask")
+      })
+    }
     "can play ping pong " in {
 
       withRunningServer(ctx => {
