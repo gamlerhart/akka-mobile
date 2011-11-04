@@ -2,11 +2,12 @@ package akka.mobile.remote
 
 import java.net.InetSocketAddress
 import java.io.IOException
-import akka.dispatch.Dispatchers
 import akka.actor._
 import akka.config.Supervision.{AllForOneStrategy, SupervisorConfig}
 import akka.util.duration._
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
+import com.eaio.uuid.UUID
+import akka.dispatch.{CompletableFuture, Dispatchers}
 
 
 /**
@@ -15,13 +16,42 @@ import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
  */
 
 class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
-                      messageSink: MessageSink, serializer: Serialisation) {
+                      clientId: ClientId) {
   val registry: Registry = new Registry
   val futures: FutureResultHandling = new FutureResultHandling
   private val messangers = scala.collection.mutable.Map[InetSocketAddress, ActorRef]()
   private val supervisor = Supervisor(SupervisorConfig(
     AllForOneStrategy(List(classOf[Exception]), 5, 10000), Nil
   ))
+  val msgSink: MessageSink = new MessageSink() {
+
+    def sendResponse(clientId: Either[ClientId, InetSocketAddress],
+                     responseFor: UUID, result: Right[Throwable, Any]): Unit = {
+      throw new Error("TODO")
+    }
+
+    def send(clientId: Either[ClientId, InetSocketAddress],
+             serviceId: String, message: Any,
+             senderOption: Option[ActorRef],
+             replyUUID: Option[UUID]) {
+      clientId match {
+        case Right(remoteAddress) => {
+          registry.registerActor("uuid:" + senderOption.get.uuid.toString, senderOption.get)
+          val theMessage = serializer.toWireProtocol(
+            serializer.messageToActor(serviceId, senderOption, message, replyUUID))
+          val remoteChannel = channelFor(remoteAddress)
+          remoteChannel ! SendMessage(theMessage, senderOption)
+
+        }
+        case Left(_) => throw new IllegalArgumentException("Cannot send to a client from a client")
+      }
+    }
+
+    def registerFuture(uuid: UUID, future: CompletableFuture[Any]) {
+      futures.put(uuid, future)
+    }
+  }
+  private val serializer = new ClientSideSerialisation(msgSink, clientId)
 
   /**
    * Returns the actor which is responsible for remote messaging with the given server
@@ -32,7 +62,7 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
       () => new RemoteMessageChannel(socketFactory(address))))
     val sendActor = Actor.actorOf(new RemoteMessageSendingActor(socketInitialisation))
     val receiveActor = Actor.actorOf(new ReceiveChannelMonitoring(socketInitialisation,
-      new WireMessageDispatcher(registry, futures, messageSink, serializer), address))
+      new WireMessageDispatcher(registry, futures, msgSink, serializer), address))
     supervisor.link(socketInitialisation)
     supervisor.link(sendActor)
     supervisor.link(receiveActor)
@@ -52,11 +82,11 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
 object RemoteMessaging {
   val DEFAULT_TCP_SOCKET_FACTOR = (address: InetSocketAddress) => new TCPSocket(address)
 
-  def apply(serialisation: Serialisation, messageSink: MessageSink) = new RemoteMessaging(DEFAULT_TCP_SOCKET_FACTOR, messageSink, serialisation)
+  def apply(clientID: ClientId) = new RemoteMessaging(DEFAULT_TCP_SOCKET_FACTOR, clientID)
 
 
-  def apply(socketFactory: InetSocketAddress => SocketRepresentation, messageSink: MessageSink, serialisation: Serialisation)
-  = new RemoteMessaging(socketFactory, messageSink, serialisation)
+  def apply(socketFactory: InetSocketAddress => SocketRepresentation, clientID: ClientId)
+  = new RemoteMessaging(socketFactory, clientID)
 }
 
 
