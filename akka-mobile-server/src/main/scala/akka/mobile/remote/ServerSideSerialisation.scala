@@ -2,6 +2,7 @@ package akka.mobile.remote
 
 import akka.actor.ActorRef
 import akka.mobile.protocol.MobileProtocol._
+import java.net.InetSocketAddress
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -13,12 +14,11 @@ class ServerSideSerialisation(msgSink: MessageSink, serverInfo: ServerInfo) exte
   def toAddressProtocol(actorRef: ActorRef) = {
     AddressProtocol.newBuilder
       .setType(AddressType.SERVICE_ADDRESS)
-      .setServiceAddress(ServiceAddress.newBuilder().setHostname(serverInfo.hostName).setPort(serverInfo.port))
       .build()
 
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol) = {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, ctxInfo: InetSocketAddress) = {
     val remoteActorId = refInfo.getClassOrServiceName
     val homeAddress = refInfo.getNodeAddress
     homeAddress.getType match {

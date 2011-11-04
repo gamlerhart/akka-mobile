@@ -106,19 +106,10 @@ enum AddressType{
  */
 message AddressProtocol {
   required AddressType type = 1;
-  optional ServiceAddress serviceAddress = 2;
-  optional DeviceAddress deviceAddress = 3;
+  optional DeviceAddress deviceAddress = 2;
 
 }
 
-/**
- * A service is a server running
- * It will rarely / never change its address
- */
-message ServiceAddress{
-  required string hostname = 1;
-  required uint32 port = 2;
-}
 
 /**
   * A device is a mobile and changes its address and port all the time

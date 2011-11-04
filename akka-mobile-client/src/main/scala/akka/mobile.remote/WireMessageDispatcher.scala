@@ -2,6 +2,7 @@ package akka.mobile.remote
 
 import akka.actor.UntypedChannel._
 import akka.mobile.protocol.MobileProtocol.MobileMessageProtocol
+import java.net.InetSocketAddress
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -16,11 +17,11 @@ class WireMessageDispatcher(private val actorRegistry: Registry, serialisation: 
    * if we're on the server or client device. And we don't want to have the code
    * for server-side references on the client.
    */
-  def dispatchToActor(message: MobileMessageProtocol) {
+  def dispatchToActor(message: MobileMessageProtocol, ctxInfo: InetSocketAddress) {
     val actorInfo = message.getActorInfo
     val actor = actorRegistry.findActorById(actorInfo.getId)
 
-    val (msgForActor, sender) = serialisation.deSerializeMsg(message);
+    val (msgForActor, sender) = serialisation.deSerializeMsg(message, ctxInfo);
 
     if (message.getOneWay) {
       actor.postMessageToMailbox(msgForActor, sender)

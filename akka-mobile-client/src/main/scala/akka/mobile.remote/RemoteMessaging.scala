@@ -30,7 +30,7 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation, 
       () => new RemoteMessageChannel(socketFactory(address))))
     val sendActor = Actor.actorOf(new RemoteMessageSendingActor(socketInitialisation))
     val receiveActor = Actor.actorOf(new ReceiveChannelMonitoring(socketInitialisation,
-      new WireMessageDispatcher(registry, serializer)))
+      new WireMessageDispatcher(registry, serializer), address))
     supervisor.link(socketInitialisation)
     supervisor.link(sendActor)
     supervisor.link(receiveActor)
@@ -90,7 +90,9 @@ class RemoteMessageSendingActor(channelProvider: ActorRef) extends Actor {
   }
 }
 
-class ReceiveChannelMonitoring(channelProvider: ActorRef, dispatcher: WireMessageDispatcher) extends Actor {
+class ReceiveChannelMonitoring(channelProvider: ActorRef,
+                               dispatcher: WireMessageDispatcher,
+                               ctxInfo: InetSocketAddress) extends Actor {
   self.dispatcher = Dispatchers.newThreadBasedDispatcher(self)
 
   var channel: Option[RemoteMessageChannel] = None
@@ -112,7 +114,7 @@ class ReceiveChannelMonitoring(channelProvider: ActorRef, dispatcher: WireMessag
         val msg = channel.get.receive()
         if (msg != null) {
           if (msg.hasMessage) {
-            dispatcher.dispatchToActor(msg.getMessage)
+            dispatcher.dispatchToActor(msg.getMessage, ctxInfo)
           } else if (msg != msg) {
             throw new Error("Not yet implemented")
           }

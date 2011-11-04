@@ -5,6 +5,7 @@ import akka.mobile.protocol.MobileProtocol._
 import com.google.protobuf.ByteString
 import akka.actor.{LocalActorRef, ActorRef}
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
+import java.net.InetSocketAddress
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -47,15 +48,15 @@ trait Serialisation {
 
   def toAddressProtocol(actorRef: ActorRef): AddressProtocol
 
-  def deSerializeSender(msg: MobileMessageProtocol): Option[ActorRef] = {
+  def deSerializeSender(msg: MobileMessageProtocol, ctxInfo: InetSocketAddress): Option[ActorRef] = {
     if (msg.hasSender) {
-      Some(deSerializeActorRef(msg.getSender))
+      Some(deSerializeActorRef(msg.getSender, ctxInfo))
     } else {
       None
     }
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol): ActorRef
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, ctxInfo: InetSocketAddress): ActorRef
 
 
   private def toRemoteActorRefProtocol(actor: ActorRef): RemoteActorRefProtocol = actor match {
@@ -76,12 +77,12 @@ trait Serialisation {
   }
 
 
-  def deSerializeMsg(msg: MobileMessageProtocol) = {
+  def deSerializeMsg(msg: MobileMessageProtocol, ctxInfo: InetSocketAddress) = {
     val deserializedMsg = msg.getMessage.getSerializationScheme match {
       case SerializationSchemeType.JAVA => javaDeSerialize(msg.getMessage.getMessage.toByteArray)
       case _ => throw new Error("Not yet implemented")
     }
-    val senderOption = deSerializeSender(msg)
+    val senderOption = deSerializeSender(msg, ctxInfo)
     (deserializedMsg, senderOption)
   }
 

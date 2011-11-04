@@ -4099,12 +4099,7 @@ public final class MobileProtocol {
 
         akka.mobile.protocol.MobileProtocol.AddressType getType();
 
-        // optional .ServiceAddress serviceAddress = 2;
-        boolean hasServiceAddress();
-
-        akka.mobile.protocol.MobileProtocol.ServiceAddress getServiceAddress();
-
-        // optional .DeviceAddress deviceAddress = 3;
+        // optional .DeviceAddress deviceAddress = 2;
         boolean hasDeviceAddress();
 
         akka.mobile.protocol.MobileProtocol.DeviceAddress getDeviceAddress();
@@ -4144,24 +4139,12 @@ public final class MobileProtocol {
             return type_;
         }
 
-        // optional .ServiceAddress serviceAddress = 2;
-        public static final int SERVICEADDRESS_FIELD_NUMBER = 2;
-        private akka.mobile.protocol.MobileProtocol.ServiceAddress serviceAddress_;
-
-        public boolean hasServiceAddress() {
-            return ((bitField0_ & 0x00000002) == 0x00000002);
-        }
-
-        public akka.mobile.protocol.MobileProtocol.ServiceAddress getServiceAddress() {
-            return serviceAddress_;
-        }
-
-        // optional .DeviceAddress deviceAddress = 3;
-        public static final int DEVICEADDRESS_FIELD_NUMBER = 3;
+        // optional .DeviceAddress deviceAddress = 2;
+        public static final int DEVICEADDRESS_FIELD_NUMBER = 2;
         private akka.mobile.protocol.MobileProtocol.DeviceAddress deviceAddress_;
 
         public boolean hasDeviceAddress() {
-            return ((bitField0_ & 0x00000004) == 0x00000004);
+            return ((bitField0_ & 0x00000002) == 0x00000002);
         }
 
         public akka.mobile.protocol.MobileProtocol.DeviceAddress getDeviceAddress() {
@@ -4170,7 +4153,6 @@ public final class MobileProtocol {
 
         private void initFields() {
             type_ = akka.mobile.protocol.MobileProtocol.AddressType.SERVICE_ADDRESS;
-            serviceAddress_ = akka.mobile.protocol.MobileProtocol.ServiceAddress.getDefaultInstance();
             deviceAddress_ = akka.mobile.protocol.MobileProtocol.DeviceAddress.getDefaultInstance();
         }
 
@@ -4183,12 +4165,6 @@ public final class MobileProtocol {
             if (!hasType()) {
                 memoizedIsInitialized = 0;
                 return false;
-            }
-            if (hasServiceAddress()) {
-                if (!getServiceAddress().isInitialized()) {
-                    memoizedIsInitialized = 0;
-                    return false;
-                }
             }
             if (hasDeviceAddress()) {
                 if (!getDeviceAddress().isInitialized()) {
@@ -4207,10 +4183,7 @@ public final class MobileProtocol {
                 output.writeEnum(1, type_.getNumber());
             }
             if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                output.writeMessage(2, serviceAddress_);
-            }
-            if (((bitField0_ & 0x00000004) == 0x00000004)) {
-                output.writeMessage(3, deviceAddress_);
+                output.writeMessage(2, deviceAddress_);
             }
         }
 
@@ -4227,11 +4200,7 @@ public final class MobileProtocol {
             }
             if (((bitField0_ & 0x00000002) == 0x00000002)) {
                 size += com.google.protobuf.CodedOutputStream
-                        .computeMessageSize(2, serviceAddress_);
-            }
-            if (((bitField0_ & 0x00000004) == 0x00000004)) {
-                size += com.google.protobuf.CodedOutputStream
-                        .computeMessageSize(3, deviceAddress_);
+                        .computeMessageSize(2, deviceAddress_);
             }
             memoizedSerializedSize = size;
             return size;
@@ -4357,10 +4326,8 @@ public final class MobileProtocol {
                 super.clear();
                 type_ = akka.mobile.protocol.MobileProtocol.AddressType.SERVICE_ADDRESS;
                 bitField0_ = (bitField0_ & ~0x00000001);
-                serviceAddress_ = akka.mobile.protocol.MobileProtocol.ServiceAddress.getDefaultInstance();
-                bitField0_ = (bitField0_ & ~0x00000002);
                 deviceAddress_ = akka.mobile.protocol.MobileProtocol.DeviceAddress.getDefaultInstance();
-                bitField0_ = (bitField0_ & ~0x00000004);
+                bitField0_ = (bitField0_ & ~0x00000002);
                 return this;
             }
 
@@ -4401,10 +4368,6 @@ public final class MobileProtocol {
                 if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
                     to_bitField0_ |= 0x00000002;
                 }
-                result.serviceAddress_ = serviceAddress_;
-                if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-                    to_bitField0_ |= 0x00000004;
-                }
                 result.deviceAddress_ = deviceAddress_;
                 result.bitField0_ = to_bitField0_;
                 return result;
@@ -4414,9 +4377,6 @@ public final class MobileProtocol {
                 if (other == akka.mobile.protocol.MobileProtocol.AddressProtocol.getDefaultInstance()) return this;
                 if (other.hasType()) {
                     setType(other.getType());
-                }
-                if (other.hasServiceAddress()) {
-                    mergeServiceAddress(other.getServiceAddress());
                 }
                 if (other.hasDeviceAddress()) {
                     mergeDeviceAddress(other.getDeviceAddress());
@@ -4428,12 +4388,6 @@ public final class MobileProtocol {
                 if (!hasType()) {
 
                     return false;
-                }
-                if (hasServiceAddress()) {
-                    if (!getServiceAddress().isInitialized()) {
-
-                        return false;
-                    }
                 }
                 if (hasDeviceAddress()) {
                     if (!getDeviceAddress().isInitialized()) {
@@ -4471,15 +4425,6 @@ public final class MobileProtocol {
                             break;
                         }
                         case 18: {
-                            akka.mobile.protocol.MobileProtocol.ServiceAddress.Builder subBuilder = akka.mobile.protocol.MobileProtocol.ServiceAddress.newBuilder();
-                            if (hasServiceAddress()) {
-                                subBuilder.mergeFrom(getServiceAddress());
-                            }
-                            input.readMessage(subBuilder, extensionRegistry);
-                            setServiceAddress(subBuilder.buildPartial());
-                            break;
-                        }
-                        case 26: {
                             akka.mobile.protocol.MobileProtocol.DeviceAddress.Builder subBuilder = akka.mobile.protocol.MobileProtocol.DeviceAddress.newBuilder();
                             if (hasDeviceAddress()) {
                                 subBuilder.mergeFrom(getDeviceAddress());
@@ -4522,60 +4467,11 @@ public final class MobileProtocol {
                 return this;
             }
 
-            // optional .ServiceAddress serviceAddress = 2;
-            private akka.mobile.protocol.MobileProtocol.ServiceAddress serviceAddress_ = akka.mobile.protocol.MobileProtocol.ServiceAddress.getDefaultInstance();
-
-            public boolean hasServiceAddress() {
-                return ((bitField0_ & 0x00000002) == 0x00000002);
-            }
-
-            public akka.mobile.protocol.MobileProtocol.ServiceAddress getServiceAddress() {
-                return serviceAddress_;
-            }
-
-            public Builder setServiceAddress(akka.mobile.protocol.MobileProtocol.ServiceAddress value) {
-                if (value == null) {
-                    throw new NullPointerException();
-                }
-                serviceAddress_ = value;
-
-                bitField0_ |= 0x00000002;
-                return this;
-            }
-
-            public Builder setServiceAddress(
-                    akka.mobile.protocol.MobileProtocol.ServiceAddress.Builder builderForValue) {
-                serviceAddress_ = builderForValue.build();
-
-                bitField0_ |= 0x00000002;
-                return this;
-            }
-
-            public Builder mergeServiceAddress(akka.mobile.protocol.MobileProtocol.ServiceAddress value) {
-                if (((bitField0_ & 0x00000002) == 0x00000002) &&
-                        serviceAddress_ != akka.mobile.protocol.MobileProtocol.ServiceAddress.getDefaultInstance()) {
-                    serviceAddress_ =
-                            akka.mobile.protocol.MobileProtocol.ServiceAddress.newBuilder(serviceAddress_).mergeFrom(value).buildPartial();
-                } else {
-                    serviceAddress_ = value;
-                }
-
-                bitField0_ |= 0x00000002;
-                return this;
-            }
-
-            public Builder clearServiceAddress() {
-                serviceAddress_ = akka.mobile.protocol.MobileProtocol.ServiceAddress.getDefaultInstance();
-
-                bitField0_ = (bitField0_ & ~0x00000002);
-                return this;
-            }
-
-            // optional .DeviceAddress deviceAddress = 3;
+            // optional .DeviceAddress deviceAddress = 2;
             private akka.mobile.protocol.MobileProtocol.DeviceAddress deviceAddress_ = akka.mobile.protocol.MobileProtocol.DeviceAddress.getDefaultInstance();
 
             public boolean hasDeviceAddress() {
-                return ((bitField0_ & 0x00000004) == 0x00000004);
+                return ((bitField0_ & 0x00000002) == 0x00000002);
             }
 
             public akka.mobile.protocol.MobileProtocol.DeviceAddress getDeviceAddress() {
@@ -4588,7 +4484,7 @@ public final class MobileProtocol {
                 }
                 deviceAddress_ = value;
 
-                bitField0_ |= 0x00000004;
+                bitField0_ |= 0x00000002;
                 return this;
             }
 
@@ -4596,12 +4492,12 @@ public final class MobileProtocol {
                     akka.mobile.protocol.MobileProtocol.DeviceAddress.Builder builderForValue) {
                 deviceAddress_ = builderForValue.build();
 
-                bitField0_ |= 0x00000004;
+                bitField0_ |= 0x00000002;
                 return this;
             }
 
             public Builder mergeDeviceAddress(akka.mobile.protocol.MobileProtocol.DeviceAddress value) {
-                if (((bitField0_ & 0x00000004) == 0x00000004) &&
+                if (((bitField0_ & 0x00000002) == 0x00000002) &&
                         deviceAddress_ != akka.mobile.protocol.MobileProtocol.DeviceAddress.getDefaultInstance()) {
                     deviceAddress_ =
                             akka.mobile.protocol.MobileProtocol.DeviceAddress.newBuilder(deviceAddress_).mergeFrom(value).buildPartial();
@@ -4609,14 +4505,14 @@ public final class MobileProtocol {
                     deviceAddress_ = value;
                 }
 
-                bitField0_ |= 0x00000004;
+                bitField0_ |= 0x00000002;
                 return this;
             }
 
             public Builder clearDeviceAddress() {
                 deviceAddress_ = akka.mobile.protocol.MobileProtocol.DeviceAddress.getDefaultInstance();
 
-                bitField0_ = (bitField0_ & ~0x00000004);
+                bitField0_ = (bitField0_ & ~0x00000002);
                 return this;
             }
 
@@ -4629,442 +4525,6 @@ public final class MobileProtocol {
         }
 
         // @@protoc_insertion_point(class_scope:AddressProtocol)
-    }
-
-    public interface ServiceAddressOrBuilder
-            extends com.google.protobuf.MessageLiteOrBuilder {
-
-        // required string hostname = 1;
-        boolean hasHostname();
-
-        String getHostname();
-
-        // required uint32 port = 2;
-        boolean hasPort();
-
-        int getPort();
-    }
-
-    public static final class ServiceAddress extends
-            com.google.protobuf.GeneratedMessageLite
-            implements ServiceAddressOrBuilder {
-        // Use ServiceAddress.newBuilder() to construct.
-        private ServiceAddress(Builder builder) {
-            super(builder);
-        }
-
-        private ServiceAddress(boolean noInit) {
-        }
-
-        private static final ServiceAddress defaultInstance;
-
-        public static ServiceAddress getDefaultInstance() {
-            return defaultInstance;
-        }
-
-        public ServiceAddress getDefaultInstanceForType() {
-            return defaultInstance;
-        }
-
-        private int bitField0_;
-        // required string hostname = 1;
-        public static final int HOSTNAME_FIELD_NUMBER = 1;
-        private java.lang.Object hostname_;
-
-        public boolean hasHostname() {
-            return ((bitField0_ & 0x00000001) == 0x00000001);
-        }
-
-        public String getHostname() {
-            java.lang.Object ref = hostname_;
-            if (ref instanceof String) {
-                return (String) ref;
-            } else {
-                com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
-                String s = bs.toStringUtf8();
-                if (com.google.protobuf.Internal.isValidUtf8(bs)) {
-                    hostname_ = s;
-                }
-                return s;
-            }
-        }
-
-        private com.google.protobuf.ByteString getHostnameBytes() {
-            java.lang.Object ref = hostname_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8((String) ref);
-                hostname_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
-            }
-        }
-
-        // required uint32 port = 2;
-        public static final int PORT_FIELD_NUMBER = 2;
-        private int port_;
-
-        public boolean hasPort() {
-            return ((bitField0_ & 0x00000002) == 0x00000002);
-        }
-
-        public int getPort() {
-            return port_;
-        }
-
-        private void initFields() {
-            hostname_ = "";
-            port_ = 0;
-        }
-
-        private byte memoizedIsInitialized = -1;
-
-        public final boolean isInitialized() {
-            byte isInitialized = memoizedIsInitialized;
-            if (isInitialized != -1) return isInitialized == 1;
-
-            if (!hasHostname()) {
-                memoizedIsInitialized = 0;
-                return false;
-            }
-            if (!hasPort()) {
-                memoizedIsInitialized = 0;
-                return false;
-            }
-            memoizedIsInitialized = 1;
-            return true;
-        }
-
-        public void writeTo(com.google.protobuf.CodedOutputStream output)
-                throws java.io.IOException {
-            getSerializedSize();
-            if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                output.writeBytes(1, getHostnameBytes());
-            }
-            if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                output.writeUInt32(2, port_);
-            }
-        }
-
-        private int memoizedSerializedSize = -1;
-
-        public int getSerializedSize() {
-            int size = memoizedSerializedSize;
-            if (size != -1) return size;
-
-            size = 0;
-            if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                size += com.google.protobuf.CodedOutputStream
-                        .computeBytesSize(1, getHostnameBytes());
-            }
-            if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                size += com.google.protobuf.CodedOutputStream
-                        .computeUInt32Size(2, port_);
-            }
-            memoizedSerializedSize = size;
-            return size;
-        }
-
-        private static final long serialVersionUID = 0L;
-
-        @java.lang.Override
-        protected java.lang.Object writeReplace()
-                throws java.io.ObjectStreamException {
-            return super.writeReplace();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseFrom(
-                com.google.protobuf.ByteString data)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return newBuilder().mergeFrom(data).buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseFrom(
-                com.google.protobuf.ByteString data,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return newBuilder().mergeFrom(data, extensionRegistry)
-                    .buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseFrom(byte[] data)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return newBuilder().mergeFrom(data).buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseFrom(
-                byte[] data,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws com.google.protobuf.InvalidProtocolBufferException {
-            return newBuilder().mergeFrom(data, extensionRegistry)
-                    .buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseFrom(java.io.InputStream input)
-                throws java.io.IOException {
-            return newBuilder().mergeFrom(input).buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseFrom(
-                java.io.InputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
-            return newBuilder().mergeFrom(input, extensionRegistry)
-                    .buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseDelimitedFrom(java.io.InputStream input)
-                throws java.io.IOException {
-            Builder builder = newBuilder();
-            if (builder.mergeDelimitedFrom(input)) {
-                return builder.buildParsed();
-            } else {
-                return null;
-            }
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseDelimitedFrom(
-                java.io.InputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
-            Builder builder = newBuilder();
-            if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
-                return builder.buildParsed();
-            } else {
-                return null;
-            }
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseFrom(
-                com.google.protobuf.CodedInputStream input)
-                throws java.io.IOException {
-            return newBuilder().mergeFrom(input).buildParsed();
-        }
-
-        public static akka.mobile.protocol.MobileProtocol.ServiceAddress parseFrom(
-                com.google.protobuf.CodedInputStream input,
-                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                throws java.io.IOException {
-            return newBuilder().mergeFrom(input, extensionRegistry)
-                    .buildParsed();
-        }
-
-        public static Builder newBuilder() {
-            return Builder.create();
-        }
-
-        public Builder newBuilderForType() {
-            return newBuilder();
-        }
-
-        public static Builder newBuilder(akka.mobile.protocol.MobileProtocol.ServiceAddress prototype) {
-            return newBuilder().mergeFrom(prototype);
-        }
-
-        public Builder toBuilder() {
-            return newBuilder(this);
-        }
-
-        public static final class Builder extends
-                com.google.protobuf.GeneratedMessageLite.Builder<
-                        akka.mobile.protocol.MobileProtocol.ServiceAddress, Builder>
-                implements akka.mobile.protocol.MobileProtocol.ServiceAddressOrBuilder {
-            // Construct using akka.mobile.protocol.MobileProtocol.ServiceAddress.newBuilder()
-            private Builder() {
-                maybeForceBuilderInitialization();
-            }
-
-            private void maybeForceBuilderInitialization() {
-            }
-
-            private static Builder create() {
-                return new Builder();
-            }
-
-            public Builder clear() {
-                super.clear();
-                hostname_ = "";
-                bitField0_ = (bitField0_ & ~0x00000001);
-                port_ = 0;
-                bitField0_ = (bitField0_ & ~0x00000002);
-                return this;
-            }
-
-            public Builder clone() {
-                return create().mergeFrom(buildPartial());
-            }
-
-            public akka.mobile.protocol.MobileProtocol.ServiceAddress getDefaultInstanceForType() {
-                return akka.mobile.protocol.MobileProtocol.ServiceAddress.getDefaultInstance();
-            }
-
-            public akka.mobile.protocol.MobileProtocol.ServiceAddress build() {
-                akka.mobile.protocol.MobileProtocol.ServiceAddress result = buildPartial();
-                if (!result.isInitialized()) {
-                    throw newUninitializedMessageException(result);
-                }
-                return result;
-            }
-
-            private akka.mobile.protocol.MobileProtocol.ServiceAddress buildParsed()
-                    throws com.google.protobuf.InvalidProtocolBufferException {
-                akka.mobile.protocol.MobileProtocol.ServiceAddress result = buildPartial();
-                if (!result.isInitialized()) {
-                    throw newUninitializedMessageException(
-                            result).asInvalidProtocolBufferException();
-                }
-                return result;
-            }
-
-            public akka.mobile.protocol.MobileProtocol.ServiceAddress buildPartial() {
-                akka.mobile.protocol.MobileProtocol.ServiceAddress result = new akka.mobile.protocol.MobileProtocol.ServiceAddress(this);
-                int from_bitField0_ = bitField0_;
-                int to_bitField0_ = 0;
-                if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-                    to_bitField0_ |= 0x00000001;
-                }
-                result.hostname_ = hostname_;
-                if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-                    to_bitField0_ |= 0x00000002;
-                }
-                result.port_ = port_;
-                result.bitField0_ = to_bitField0_;
-                return result;
-            }
-
-            public Builder mergeFrom(akka.mobile.protocol.MobileProtocol.ServiceAddress other) {
-                if (other == akka.mobile.protocol.MobileProtocol.ServiceAddress.getDefaultInstance()) return this;
-                if (other.hasHostname()) {
-                    setHostname(other.getHostname());
-                }
-                if (other.hasPort()) {
-                    setPort(other.getPort());
-                }
-                return this;
-            }
-
-            public final boolean isInitialized() {
-                if (!hasHostname()) {
-
-                    return false;
-                }
-                if (!hasPort()) {
-
-                    return false;
-                }
-                return true;
-            }
-
-            public Builder mergeFrom(
-                    com.google.protobuf.CodedInputStream input,
-                    com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-                    throws java.io.IOException {
-                while (true) {
-                    int tag = input.readTag();
-                    switch (tag) {
-                        case 0:
-
-                            return this;
-                        default: {
-                            if (!parseUnknownField(input, extensionRegistry, tag)) {
-
-                                return this;
-                            }
-                            break;
-                        }
-                        case 10: {
-                            bitField0_ |= 0x00000001;
-                            hostname_ = input.readBytes();
-                            break;
-                        }
-                        case 16: {
-                            bitField0_ |= 0x00000002;
-                            port_ = input.readUInt32();
-                            break;
-                        }
-                    }
-                }
-            }
-
-            private int bitField0_;
-
-            // required string hostname = 1;
-            private java.lang.Object hostname_ = "";
-
-            public boolean hasHostname() {
-                return ((bitField0_ & 0x00000001) == 0x00000001);
-            }
-
-            public String getHostname() {
-                java.lang.Object ref = hostname_;
-                if (!(ref instanceof String)) {
-                    String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
-                    hostname_ = s;
-                    return s;
-                } else {
-                    return (String) ref;
-                }
-            }
-
-            public Builder setHostname(String value) {
-                if (value == null) {
-                    throw new NullPointerException();
-                }
-                bitField0_ |= 0x00000001;
-                hostname_ = value;
-
-                return this;
-            }
-
-            public Builder clearHostname() {
-                bitField0_ = (bitField0_ & ~0x00000001);
-                hostname_ = getDefaultInstance().getHostname();
-
-                return this;
-            }
-
-            void setHostname(com.google.protobuf.ByteString value) {
-                bitField0_ |= 0x00000001;
-                hostname_ = value;
-
-            }
-
-            // required uint32 port = 2;
-            private int port_;
-
-            public boolean hasPort() {
-                return ((bitField0_ & 0x00000002) == 0x00000002);
-            }
-
-            public int getPort() {
-                return port_;
-            }
-
-            public Builder setPort(int value) {
-                bitField0_ |= 0x00000002;
-                port_ = value;
-
-                return this;
-            }
-
-            public Builder clearPort() {
-                bitField0_ = (bitField0_ & ~0x00000002);
-                port_ = 0;
-
-                return this;
-            }
-
-            // @@protoc_insertion_point(builder_scope:ServiceAddress)
-        }
-
-        static {
-            defaultInstance = new ServiceAddress(true);
-            defaultInstance.initFields();
-        }
-
-        // @@protoc_insertion_point(class_scope:ServiceAddress)
     }
 
     public interface DeviceAddressOrBuilder

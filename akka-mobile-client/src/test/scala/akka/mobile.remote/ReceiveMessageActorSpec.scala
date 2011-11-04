@@ -8,6 +8,7 @@ import java.util.concurrent.{TimeUnit, CountDownLatch}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.Actor
 import akka.mobile.testutils.MockSerialisation
+import java.net.InetSocketAddress
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -31,13 +32,14 @@ class ReceiveMessageActorSpec extends Spec with ShouldMatchers with TestKit with
 
       val expectMsg = new CountDownLatch(2);
       val expectMsgMock = new WireMessageDispatcher(new Registry, MockSerialisation) {
-        override def dispatchToActor(message: MobileMessageProtocol) {
+        override def dispatchToActor(message: MobileMessageProtocol, ctxInfo: InetSocketAddress) {
           expectMsg.countDown()
         }
       }
 
       val initializer = Actor.actorOf(ResourceInitializeActor(() => new RemoteMessageChannel(socket)));
-      val mockChannel = Actor.actorOf(new ReceiveChannelMonitoring(initializer, expectMsgMock));
+      val mockChannel = Actor.actorOf(
+        new ReceiveChannelMonitoring(initializer, expectMsgMock, new InetSocketAddress("localhost", 8888)));
 
       initializer.start()
       mockChannel.start()
@@ -53,7 +55,8 @@ class ReceiveMessageActorSpec extends Spec with ShouldMatchers with TestKit with
           closedConnection.countDown()
         }
       }));
-      val receiveActor = Actor.actorOf(new ReceiveChannelMonitoring(initializer, expectMsgMock));
+      val receiveActor = Actor.actorOf(
+        new ReceiveChannelMonitoring(initializer, expectMsgMock, new InetSocketAddress("localhost", 8888)));
 
       initializer.start()
       receiveActor.start()

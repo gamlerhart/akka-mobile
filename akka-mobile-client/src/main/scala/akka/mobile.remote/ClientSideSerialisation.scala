@@ -17,13 +17,13 @@ class ClientSideSerialisation(messageSender: MessageSink, deviceAddress: ClientI
       .build
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol): ActorRef = {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, ctxInfo: InetSocketAddress): ActorRef = {
     val remoteActorId = refInfo.getClassOrServiceName
     val homeAddress = refInfo.getNodeAddress
     homeAddress.getType match {
       case AddressType.SERVICE_ADDRESS => {
         ClientRemoteActorRef(
-          deserializeServerId(homeAddress.getServiceAddress),
+          new InetSocketAddress(ctxInfo.getHostName, ctxInfo.getPort),
           remoteActorId, messageSender);
       }
       case AddressType.DEVICE_ADDRESS
@@ -31,7 +31,4 @@ class ClientSideSerialisation(messageSender: MessageSink, deviceAddress: ClientI
       case ue => throw new Error("Unexpected type " + ue)
     }
   }
-
-  def deserializeServerId(serverAddress: ServiceAddress)
-  = new InetSocketAddress(serverAddress.getHostname, serverAddress.getPort)
 }

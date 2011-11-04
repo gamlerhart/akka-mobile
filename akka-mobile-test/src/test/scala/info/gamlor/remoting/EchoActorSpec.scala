@@ -6,8 +6,8 @@ import TestServer._
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.{ActorRef, Actor}
 import java.util.concurrent.{CountDownLatch, TimeUnit}
-import akka.mobile.remote.MobileRemoteClient
-import akka.mobile.testutils.TestDevice
+import akka.mobile.testutils.{NetworkUtils, TestDevice}
+import akka.mobile.remote.{NettyRemoteServer, MobileRemoteClient}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -17,7 +17,7 @@ import akka.mobile.testutils.TestDevice
 class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
 
   val client = MobileRemoteClient.createClient(TestDevice)
-  "The Actor must " must {
+  "The Actor " must {
 
     "receives message " in {
 
@@ -60,6 +60,22 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
 
         finishedBarrier.await(5, TimeUnit.SECONDS) should be(true)
       })
+    }
+    "can bind server to 0.0.0.0" in {
+
+      val port = NetworkUtils.findFreePort()
+      val server = NettyRemoteServer.start("0.0.0.0", port);
+      val local = Actor.actorOf(new ReceiveCheckActor(None)).start()
+      server.register("echo", local)
+      val remoteEchoActor = client.actorFor("echo", "localhost", port)
+      val finishedBarrier = new CountDownLatch(1)
+      val clientActor = Actor.actorOf(new ClientReply(remoteEchoActor, finishedBarrier)).start();
+
+      clientActor ! "Start"
+
+
+      finishedBarrier.await(5, TimeUnit.SECONDS) should be(true)
+      server.shutdownServerModule();
     }
 
 

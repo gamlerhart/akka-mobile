@@ -50,8 +50,9 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
 
   private def dispatchMessage(message: MobileMessageProtocol, channel: NettyChannel) {
 
+    val ctxInfo = channel.getRemoteAddress.asInstanceOf[InetSocketAddress]
     val sender = if (message.hasSender) {
-      Some(serializer.deSerializeActorRef(message.getSender))
+      Some(serializer.deSerializeActorRef(message.getSender, ctxInfo))
     } else {
       None
     }
@@ -72,7 +73,7 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
     })
 
     message.getActorInfo.getActorType match {
-      case SCALA_ACTOR ⇒ dispatcher.dispatchToActor(message)
+      case SCALA_ACTOR ⇒ dispatcher.dispatchToActor(message, ctxInfo)
       case TYPED_ACTOR ⇒ throw new IllegalActorStateException("ActorType TYPED_ACTOR is currently not supported")
       case JAVA_ACTOR ⇒ throw new IllegalActorStateException("ActorType JAVA_ACTOR is currently not supported")
       case other ⇒ throw new IllegalActorStateException("Unknown ActorType [" + other + "]")
