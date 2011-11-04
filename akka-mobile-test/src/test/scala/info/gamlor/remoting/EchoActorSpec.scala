@@ -5,9 +5,9 @@ import akka.testkit.TestKit
 import TestServer._
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.{ActorRef, Actor}
-import java.util.concurrent.{CountDownLatch, TimeUnit}
 import akka.mobile.testutils.{NetworkUtils, TestDevice}
 import akka.mobile.remote.{NettyRemoteServer, MobileRemoteClient}
+import java.util.concurrent._
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -57,6 +57,19 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
         response.get should be("Answer for Ask")
       })
     }
+    "get answer from peer" in {
+
+      withRunningServer(ctx => {
+        val resultQueue = new ArrayBlockingQueue[String](1)
+        val local = Actor.actorOf(new ServerAsksClient(resultQueue)).start()
+        ctx.register("echo", local)
+        val remoteEchoActor = client.actorFor("echo", "localhost", ctx.port)
+        val clientActor = Actor.actorOf(new ClientReply(remoteEchoActor, new CountDownLatch(1))).start();
+        clientActor ! "Start"
+
+        resultQueue.poll(5, TimeUnit.SECONDS) should be("Answer")
+      })
+    }
     "can play ping pong " in {
 
       withRunningServer(ctx => {
@@ -69,7 +82,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
         clientActor ! "Start"
 
 
-        finishedBarrier.await(5, TimeUnit.SECONDS) should be(true)
+        finishedBarrier.await(10, TimeUnit.SECONDS) should be(true)
       })
     }
     "can bind server to 0.0.0.0" in {
@@ -104,6 +117,15 @@ class ClientReply(remoteActor: ActorRef, doneBarrier: CountDownLatch) extends Ac
     }
     case "Answer for Answer" => {
       doneBarrier.countDown()
+    }
+  }
+}
+
+class ServerAsksClient(postQue: BlockingQueue[String]) extends Actor {
+  protected def receive = {
+    case "Start" => {
+      val value = (self.sender.get ? "Answer for Start").get.asInstanceOf[String]
+      postQue.offer(value)
     }
   }
 }

@@ -8,6 +8,7 @@ import akka.actor.{ActorRef, IllegalActorStateException}
 import java.net.InetSocketAddress
 import org.jboss.netty.channel.{ChannelFuture, ChannelFutureListener, ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
 import com.eaio.uuid.UUID
+import akka.dispatch.CompletableFuture
 
 /**
  *
@@ -60,6 +61,11 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
       serializer.messageToActor(serviceId, sender, message, replyUUID))
     backChannel.write(msg);
 
+  }
+
+
+  def registerFuture(uuid: UUID, future: CompletableFuture[Any]) {
+    futures.put(uuid, future)
   }
 
   private def dispatchMessage(message: MobileMessageProtocol, channel: NettyChannel) {

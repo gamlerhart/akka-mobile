@@ -2,6 +2,7 @@ package akka.mobile.remote
 
 import java.util.Map
 import akka.actor._
+import akka.dispatch.{DefaultCompletableFuture, ActorCompletableFuture}
 
 /**
  * Represents reference to an actor on a remote device.
@@ -35,8 +36,19 @@ case class RemoteDeviceActorRef(clientId: ClientId,
     remoteService.send(Left(clientId), serviceId, message, chSender)
   }
 
-  def postMessageToMailboxAndCreateFutureResultWithTimeout(message: Any, timeout: Long, channel: UntypedChannel)
-  = notImplemented
+  def postMessageToMailboxAndCreateFutureResultWithTimeout(message: Any,
+                                                           timeout: Long, channel: UntypedChannel): ActorCompletableFuture = {
+    val chSender = channel match {
+      case ref: ActorRef ⇒ Some(ref)
+      case _ => None
+    }
+    val chFuture = channel match {
+      case f: ActorCompletableFuture => f
+      case _ => new DefaultCompletableFuture[Any](timeout)
+    }
+    val future = remoteService.ask(Left(clientId), serviceId, message, chSender, chFuture)
+    ActorCompletableFuture(future)
+  }
 
   def start(): this.type = synchronized[this.type] {
     _status = ActorRefInternals.RUNNING

@@ -15,7 +15,7 @@ trait MessageSink {
     throw new Error("TODO")
   }
 
-  def ask(clientId: Right[Nothing, InetSocketAddress], serviceId: String,
+  def ask(clientId: Either[ClientId, InetSocketAddress], serviceId: String,
           message: Any, sender: Option[ActorRef], future: CompletableFuture[Any])
   : CompletableFuture[Any] = {
     val requestID = new UUID()
