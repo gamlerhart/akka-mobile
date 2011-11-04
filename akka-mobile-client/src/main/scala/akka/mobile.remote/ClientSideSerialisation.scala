@@ -17,13 +17,14 @@ class ClientSideSerialisation(messageSender: MessageSink, deviceAddress: ClientI
       .build
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, ctxInfo: InetSocketAddress): ActorRef = {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, clientId: Either[ClientId, InetSocketAddress]): ActorRef = {
     val remoteActorId = refInfo.getClassOrServiceName
     val homeAddress = refInfo.getNodeAddress
+    val serverID = clientId.right.get
     homeAddress.getType match {
       case AddressType.SERVICE_ADDRESS => {
         ClientRemoteActorRef(
-          new InetSocketAddress(ctxInfo.getHostName, ctxInfo.getPort),
+          new InetSocketAddress(serverID.getHostName, serverID.getPort),
           remoteActorId, messageSender);
       }
       case AddressType.DEVICE_ADDRESS

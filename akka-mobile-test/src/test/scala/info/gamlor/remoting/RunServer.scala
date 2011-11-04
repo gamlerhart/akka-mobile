@@ -14,7 +14,7 @@ class RunServer extends Spec {
 
   describe("Test Server") {
     it("is running") {
-      val server = NettyRemoteServer.start("localhost", 2552);
+      val server = NettyRemoteServer.start("0.0.0.0", 2552);
 
 
       val local = Actor.actorOf(new ReceiveCheckActor(None)).start();

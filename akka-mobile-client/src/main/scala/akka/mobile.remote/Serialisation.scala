@@ -1,11 +1,12 @@
 package akka.mobile.remote
 
-import com.eaio.uuid.UUID
-import akka.mobile.protocol.MobileProtocol._
 import com.google.protobuf.ByteString
 import akka.actor.{LocalActorRef, ActorRef}
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 import java.net.InetSocketAddress
+import com.eaio.uuid.UUID
+import akka.mobile.protocol.MobileProtocol._
+import akka.mobile.protocol.MobileProtocol
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -21,14 +22,13 @@ trait Serialisation {
     arp.build
   }
 
-  def oneWayMessageToActor(actorID: String, sender: Option[ActorRef], msg: Any) = {
-    val serializeUUID = (uuid: UUID) => {
-      UuidProtocol.newBuilder().setHigh(uuid.getTime).setLow(uuid.getClockSeqAndNode)
-    }
+  def messageToActor(actorID: String, sender: Option[ActorRef],
+                     msg: Any, replyUUID: Option[UUID]) = {
+
     val builder = MobileMessageProtocol.newBuilder()
-      .setUuid(serializeUUID(new UUID()))
-      .setOneWay(true)
+      .setUuid(serializeUUID(replyUUID.getOrElse(new UUID())))
       .setMessage(serializeMsg(msg))
+      .setOneWay(replyUUID.isEmpty)
       .setActorInfo({
       ActorInfoProtocol.newBuilder()
         .setActorType(ActorType.SCALA_ACTOR)
@@ -46,17 +46,28 @@ trait Serialisation {
     builder.build()
   }
 
+  def response(responsID: UUID,
+               result: Right[Throwable, Any]): MobileProtocol.MobileMessageProtocol = {
+
+    val builder = MobileMessageProtocol.newBuilder()
+      .setUuid(serializeUUID(new UUID()))
+      .setMessage(serializeMsg(result))
+      .setOneWay(true)
+      .setAnswerFor(serializeUUID(responsID))
+    builder.build()
+  }
+
   def toAddressProtocol(actorRef: ActorRef): AddressProtocol
 
-  def deSerializeSender(msg: MobileMessageProtocol, ctxInfo: InetSocketAddress): Option[ActorRef] = {
+  def deSerializeSender(msg: MobileMessageProtocol, clientId: Either[ClientId, InetSocketAddress]): Option[ActorRef] = {
     if (msg.hasSender) {
-      Some(deSerializeActorRef(msg.getSender, ctxInfo))
+      Some(deSerializeActorRef(msg.getSender, clientId))
     } else {
       None
     }
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, ctxInfo: InetSocketAddress): ActorRef
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, clientId: Either[ClientId, InetSocketAddress]): ActorRef
 
 
   private def toRemoteActorRefProtocol(actor: ActorRef): RemoteActorRefProtocol = actor match {
@@ -69,21 +80,29 @@ trait Serialisation {
     case _ => throw new Error("Not implemented")
   }
 
+  def serializeUUID(uuid: UUID) = {
+    UuidProtocol.newBuilder().setHigh(uuid.getTime).setLow(uuid.getClockSeqAndNode)
+  }
+
+  def deSerializeUUID(uuid: UuidProtocol) = {
+    new UUID(uuid.getHigh, uuid.getLow)
+  }
+
+
+  def deSerializeMsg(msg: MobileMessageProtocol, clientId: Either[ClientId, InetSocketAddress]) = {
+    val deserializedMsg = msg.getMessage.getSerializationScheme match {
+      case SerializationSchemeType.JAVA => javaDeSerialize(msg.getMessage.getMessage.toByteArray)
+      case _ => throw new Error("Not yet implemented")
+    }
+    val senderOption = deSerializeSender(msg, clientId)
+    (deserializedMsg, senderOption)
+  }
+
   private def serializeMsg(msg: Any): MessageProtocol.Builder = {
     val msgBuilder = MessageProtocol.newBuilder();
     msgBuilder.setSerializationScheme(SerializationSchemeType.JAVA)
     msgBuilder.setMessage(ByteString.copyFrom(javaSerialize(msg)))
     msgBuilder;
-  }
-
-
-  def deSerializeMsg(msg: MobileMessageProtocol, ctxInfo: InetSocketAddress) = {
-    val deserializedMsg = msg.getMessage.getSerializationScheme match {
-      case SerializationSchemeType.JAVA => javaDeSerialize(msg.getMessage.getMessage.toByteArray)
-      case _ => throw new Error("Not yet implemented")
-    }
-    val senderOption = deSerializeSender(msg, ctxInfo)
-    (deserializedMsg, senderOption)
   }
 
   private def javaSerialize(msg: Any): Array[Byte] = {

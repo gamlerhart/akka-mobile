@@ -530,30 +530,30 @@ public final class MobileProtocol {
 
         akka.mobile.protocol.MobileProtocol.UuidProtocol getUuid();
 
-        // required .ActorInfoProtocol actorInfo = 2;
-        boolean hasActorInfo();
-
-        akka.mobile.protocol.MobileProtocol.ActorInfoProtocol getActorInfo();
-
-        // required bool oneWay = 3;
+        // required bool oneWay = 2;
         boolean hasOneWay();
 
         boolean getOneWay();
 
-        // optional .MessageProtocol message = 4;
+        // optional .ActorInfoProtocol actorInfo = 3;
+        boolean hasActorInfo();
+
+        akka.mobile.protocol.MobileProtocol.ActorInfoProtocol getActorInfo();
+
+        // optional .UuidProtocol answerFor = 4;
+        boolean hasAnswerFor();
+
+        akka.mobile.protocol.MobileProtocol.UuidProtocol getAnswerFor();
+
+        // optional .MessageProtocol message = 5;
         boolean hasMessage();
 
         akka.mobile.protocol.MobileProtocol.MessageProtocol getMessage();
 
-        // optional .ExceptionProtocol exception = 5;
+        // optional .ExceptionProtocol exception = 6;
         boolean hasException();
 
         akka.mobile.protocol.MobileProtocol.ExceptionProtocol getException();
-
-        // optional .UuidProtocol supervisorUuid = 6;
-        boolean hasSupervisorUuid();
-
-        akka.mobile.protocol.MobileProtocol.UuidProtocol getSupervisorUuid();
 
         // optional .RemoteActorRefProtocol sender = 7;
         boolean hasSender();
@@ -567,11 +567,6 @@ public final class MobileProtocol {
         akka.mobile.protocol.MobileProtocol.MetadataEntryProtocol getMetadata(int index);
 
         int getMetadataCount();
-
-        // optional string cookie = 9;
-        boolean hasCookie();
-
-        String getCookie();
     }
 
     public static final class MobileMessageProtocol extends
@@ -608,64 +603,64 @@ public final class MobileProtocol {
             return uuid_;
         }
 
-        // required .ActorInfoProtocol actorInfo = 2;
-        public static final int ACTORINFO_FIELD_NUMBER = 2;
-        private akka.mobile.protocol.MobileProtocol.ActorInfoProtocol actorInfo_;
-
-        public boolean hasActorInfo() {
-            return ((bitField0_ & 0x00000002) == 0x00000002);
-        }
-
-        public akka.mobile.protocol.MobileProtocol.ActorInfoProtocol getActorInfo() {
-            return actorInfo_;
-        }
-
-        // required bool oneWay = 3;
-        public static final int ONEWAY_FIELD_NUMBER = 3;
+        // required bool oneWay = 2;
+        public static final int ONEWAY_FIELD_NUMBER = 2;
         private boolean oneWay_;
 
         public boolean hasOneWay() {
-            return ((bitField0_ & 0x00000004) == 0x00000004);
+            return ((bitField0_ & 0x00000002) == 0x00000002);
         }
 
         public boolean getOneWay() {
             return oneWay_;
         }
 
-        // optional .MessageProtocol message = 4;
-        public static final int MESSAGE_FIELD_NUMBER = 4;
+        // optional .ActorInfoProtocol actorInfo = 3;
+        public static final int ACTORINFO_FIELD_NUMBER = 3;
+        private akka.mobile.protocol.MobileProtocol.ActorInfoProtocol actorInfo_;
+
+        public boolean hasActorInfo() {
+            return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+
+        public akka.mobile.protocol.MobileProtocol.ActorInfoProtocol getActorInfo() {
+            return actorInfo_;
+        }
+
+        // optional .UuidProtocol answerFor = 4;
+        public static final int ANSWERFOR_FIELD_NUMBER = 4;
+        private akka.mobile.protocol.MobileProtocol.UuidProtocol answerFor_;
+
+        public boolean hasAnswerFor() {
+            return ((bitField0_ & 0x00000008) == 0x00000008);
+        }
+
+        public akka.mobile.protocol.MobileProtocol.UuidProtocol getAnswerFor() {
+            return answerFor_;
+        }
+
+        // optional .MessageProtocol message = 5;
+        public static final int MESSAGE_FIELD_NUMBER = 5;
         private akka.mobile.protocol.MobileProtocol.MessageProtocol message_;
 
         public boolean hasMessage() {
-            return ((bitField0_ & 0x00000008) == 0x00000008);
+            return ((bitField0_ & 0x00000010) == 0x00000010);
         }
 
         public akka.mobile.protocol.MobileProtocol.MessageProtocol getMessage() {
             return message_;
         }
 
-        // optional .ExceptionProtocol exception = 5;
-        public static final int EXCEPTION_FIELD_NUMBER = 5;
+        // optional .ExceptionProtocol exception = 6;
+        public static final int EXCEPTION_FIELD_NUMBER = 6;
         private akka.mobile.protocol.MobileProtocol.ExceptionProtocol exception_;
 
         public boolean hasException() {
-            return ((bitField0_ & 0x00000010) == 0x00000010);
+            return ((bitField0_ & 0x00000020) == 0x00000020);
         }
 
         public akka.mobile.protocol.MobileProtocol.ExceptionProtocol getException() {
             return exception_;
-        }
-
-        // optional .UuidProtocol supervisorUuid = 6;
-        public static final int SUPERVISORUUID_FIELD_NUMBER = 6;
-        private akka.mobile.protocol.MobileProtocol.UuidProtocol supervisorUuid_;
-
-        public boolean hasSupervisorUuid() {
-            return ((bitField0_ & 0x00000020) == 0x00000020);
-        }
-
-        public akka.mobile.protocol.MobileProtocol.UuidProtocol getSupervisorUuid() {
-            return supervisorUuid_;
         }
 
         // optional .RemoteActorRefProtocol sender = 7;
@@ -706,51 +701,15 @@ public final class MobileProtocol {
             return metadata_.get(index);
         }
 
-        // optional string cookie = 9;
-        public static final int COOKIE_FIELD_NUMBER = 9;
-        private java.lang.Object cookie_;
-
-        public boolean hasCookie() {
-            return ((bitField0_ & 0x00000080) == 0x00000080);
-        }
-
-        public String getCookie() {
-            java.lang.Object ref = cookie_;
-            if (ref instanceof String) {
-                return (String) ref;
-            } else {
-                com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
-                String s = bs.toStringUtf8();
-                if (com.google.protobuf.Internal.isValidUtf8(bs)) {
-                    cookie_ = s;
-                }
-                return s;
-            }
-        }
-
-        private com.google.protobuf.ByteString getCookieBytes() {
-            java.lang.Object ref = cookie_;
-            if (ref instanceof String) {
-                com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8((String) ref);
-                cookie_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
-            }
-        }
-
         private void initFields() {
             uuid_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
-            actorInfo_ = akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.getDefaultInstance();
             oneWay_ = false;
+            actorInfo_ = akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.getDefaultInstance();
+            answerFor_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
             message_ = akka.mobile.protocol.MobileProtocol.MessageProtocol.getDefaultInstance();
             exception_ = akka.mobile.protocol.MobileProtocol.ExceptionProtocol.getDefaultInstance();
-            supervisorUuid_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
             sender_ = akka.mobile.protocol.MobileProtocol.RemoteActorRefProtocol.getDefaultInstance();
             metadata_ = java.util.Collections.emptyList();
-            cookie_ = "";
         }
 
         private byte memoizedIsInitialized = -1;
@@ -763,10 +722,6 @@ public final class MobileProtocol {
                 memoizedIsInitialized = 0;
                 return false;
             }
-            if (!hasActorInfo()) {
-                memoizedIsInitialized = 0;
-                return false;
-            }
             if (!hasOneWay()) {
                 memoizedIsInitialized = 0;
                 return false;
@@ -775,9 +730,17 @@ public final class MobileProtocol {
                 memoizedIsInitialized = 0;
                 return false;
             }
-            if (!getActorInfo().isInitialized()) {
-                memoizedIsInitialized = 0;
-                return false;
+            if (hasActorInfo()) {
+                if (!getActorInfo().isInitialized()) {
+                    memoizedIsInitialized = 0;
+                    return false;
+                }
+            }
+            if (hasAnswerFor()) {
+                if (!getAnswerFor().isInitialized()) {
+                    memoizedIsInitialized = 0;
+                    return false;
+                }
             }
             if (hasMessage()) {
                 if (!getMessage().isInitialized()) {
@@ -787,12 +750,6 @@ public final class MobileProtocol {
             }
             if (hasException()) {
                 if (!getException().isInitialized()) {
-                    memoizedIsInitialized = 0;
-                    return false;
-                }
-            }
-            if (hasSupervisorUuid()) {
-                if (!getSupervisorUuid().isInitialized()) {
                     memoizedIsInitialized = 0;
                     return false;
                 }
@@ -820,28 +777,25 @@ public final class MobileProtocol {
                 output.writeMessage(1, uuid_);
             }
             if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                output.writeMessage(2, actorInfo_);
+                output.writeBool(2, oneWay_);
             }
             if (((bitField0_ & 0x00000004) == 0x00000004)) {
-                output.writeBool(3, oneWay_);
+                output.writeMessage(3, actorInfo_);
             }
             if (((bitField0_ & 0x00000008) == 0x00000008)) {
-                output.writeMessage(4, message_);
+                output.writeMessage(4, answerFor_);
             }
             if (((bitField0_ & 0x00000010) == 0x00000010)) {
-                output.writeMessage(5, exception_);
+                output.writeMessage(5, message_);
             }
             if (((bitField0_ & 0x00000020) == 0x00000020)) {
-                output.writeMessage(6, supervisorUuid_);
+                output.writeMessage(6, exception_);
             }
             if (((bitField0_ & 0x00000040) == 0x00000040)) {
                 output.writeMessage(7, sender_);
             }
             for (int i = 0; i < metadata_.size(); i++) {
                 output.writeMessage(8, metadata_.get(i));
-            }
-            if (((bitField0_ & 0x00000080) == 0x00000080)) {
-                output.writeBytes(9, getCookieBytes());
             }
         }
 
@@ -858,23 +812,23 @@ public final class MobileProtocol {
             }
             if (((bitField0_ & 0x00000002) == 0x00000002)) {
                 size += com.google.protobuf.CodedOutputStream
-                        .computeMessageSize(2, actorInfo_);
+                        .computeBoolSize(2, oneWay_);
             }
             if (((bitField0_ & 0x00000004) == 0x00000004)) {
                 size += com.google.protobuf.CodedOutputStream
-                        .computeBoolSize(3, oneWay_);
+                        .computeMessageSize(3, actorInfo_);
             }
             if (((bitField0_ & 0x00000008) == 0x00000008)) {
                 size += com.google.protobuf.CodedOutputStream
-                        .computeMessageSize(4, message_);
+                        .computeMessageSize(4, answerFor_);
             }
             if (((bitField0_ & 0x00000010) == 0x00000010)) {
                 size += com.google.protobuf.CodedOutputStream
-                        .computeMessageSize(5, exception_);
+                        .computeMessageSize(5, message_);
             }
             if (((bitField0_ & 0x00000020) == 0x00000020)) {
                 size += com.google.protobuf.CodedOutputStream
-                        .computeMessageSize(6, supervisorUuid_);
+                        .computeMessageSize(6, exception_);
             }
             if (((bitField0_ & 0x00000040) == 0x00000040)) {
                 size += com.google.protobuf.CodedOutputStream
@@ -883,10 +837,6 @@ public final class MobileProtocol {
             for (int i = 0; i < metadata_.size(); i++) {
                 size += com.google.protobuf.CodedOutputStream
                         .computeMessageSize(8, metadata_.get(i));
-            }
-            if (((bitField0_ & 0x00000080) == 0x00000080)) {
-                size += com.google.protobuf.CodedOutputStream
-                        .computeBytesSize(9, getCookieBytes());
             }
             memoizedSerializedSize = size;
             return size;
@@ -1012,22 +962,20 @@ public final class MobileProtocol {
                 super.clear();
                 uuid_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
                 bitField0_ = (bitField0_ & ~0x00000001);
-                actorInfo_ = akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.getDefaultInstance();
-                bitField0_ = (bitField0_ & ~0x00000002);
                 oneWay_ = false;
+                bitField0_ = (bitField0_ & ~0x00000002);
+                actorInfo_ = akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.getDefaultInstance();
                 bitField0_ = (bitField0_ & ~0x00000004);
-                message_ = akka.mobile.protocol.MobileProtocol.MessageProtocol.getDefaultInstance();
+                answerFor_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
                 bitField0_ = (bitField0_ & ~0x00000008);
-                exception_ = akka.mobile.protocol.MobileProtocol.ExceptionProtocol.getDefaultInstance();
+                message_ = akka.mobile.protocol.MobileProtocol.MessageProtocol.getDefaultInstance();
                 bitField0_ = (bitField0_ & ~0x00000010);
-                supervisorUuid_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
+                exception_ = akka.mobile.protocol.MobileProtocol.ExceptionProtocol.getDefaultInstance();
                 bitField0_ = (bitField0_ & ~0x00000020);
                 sender_ = akka.mobile.protocol.MobileProtocol.RemoteActorRefProtocol.getDefaultInstance();
                 bitField0_ = (bitField0_ & ~0x00000040);
                 metadata_ = java.util.Collections.emptyList();
                 bitField0_ = (bitField0_ & ~0x00000080);
-                cookie_ = "";
-                bitField0_ = (bitField0_ & ~0x00000100);
                 return this;
             }
 
@@ -1068,23 +1016,23 @@ public final class MobileProtocol {
                 if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
                     to_bitField0_ |= 0x00000002;
                 }
-                result.actorInfo_ = actorInfo_;
+                result.oneWay_ = oneWay_;
                 if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
                     to_bitField0_ |= 0x00000004;
                 }
-                result.oneWay_ = oneWay_;
+                result.actorInfo_ = actorInfo_;
                 if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
                     to_bitField0_ |= 0x00000008;
                 }
-                result.message_ = message_;
+                result.answerFor_ = answerFor_;
                 if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
                     to_bitField0_ |= 0x00000010;
                 }
-                result.exception_ = exception_;
+                result.message_ = message_;
                 if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
                     to_bitField0_ |= 0x00000020;
                 }
-                result.supervisorUuid_ = supervisorUuid_;
+                result.exception_ = exception_;
                 if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
                     to_bitField0_ |= 0x00000040;
                 }
@@ -1094,10 +1042,6 @@ public final class MobileProtocol {
                     bitField0_ = (bitField0_ & ~0x00000080);
                 }
                 result.metadata_ = metadata_;
-                if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
-                    to_bitField0_ |= 0x00000080;
-                }
-                result.cookie_ = cookie_;
                 result.bitField0_ = to_bitField0_;
                 return result;
             }
@@ -1108,20 +1052,20 @@ public final class MobileProtocol {
                 if (other.hasUuid()) {
                     mergeUuid(other.getUuid());
                 }
+                if (other.hasOneWay()) {
+                    setOneWay(other.getOneWay());
+                }
                 if (other.hasActorInfo()) {
                     mergeActorInfo(other.getActorInfo());
                 }
-                if (other.hasOneWay()) {
-                    setOneWay(other.getOneWay());
+                if (other.hasAnswerFor()) {
+                    mergeAnswerFor(other.getAnswerFor());
                 }
                 if (other.hasMessage()) {
                     mergeMessage(other.getMessage());
                 }
                 if (other.hasException()) {
                     mergeException(other.getException());
-                }
-                if (other.hasSupervisorUuid()) {
-                    mergeSupervisorUuid(other.getSupervisorUuid());
                 }
                 if (other.hasSender()) {
                     mergeSender(other.getSender());
@@ -1136,18 +1080,11 @@ public final class MobileProtocol {
                     }
 
                 }
-                if (other.hasCookie()) {
-                    setCookie(other.getCookie());
-                }
                 return this;
             }
 
             public final boolean isInitialized() {
                 if (!hasUuid()) {
-
-                    return false;
-                }
-                if (!hasActorInfo()) {
 
                     return false;
                 }
@@ -1159,9 +1096,17 @@ public final class MobileProtocol {
 
                     return false;
                 }
-                if (!getActorInfo().isInitialized()) {
+                if (hasActorInfo()) {
+                    if (!getActorInfo().isInitialized()) {
 
-                    return false;
+                        return false;
+                    }
+                }
+                if (hasAnswerFor()) {
+                    if (!getAnswerFor().isInitialized()) {
+
+                        return false;
+                    }
                 }
                 if (hasMessage()) {
                     if (!getMessage().isInitialized()) {
@@ -1171,12 +1116,6 @@ public final class MobileProtocol {
                 }
                 if (hasException()) {
                     if (!getException().isInitialized()) {
-
-                        return false;
-                    }
-                }
-                if (hasSupervisorUuid()) {
-                    if (!getSupervisorUuid().isInitialized()) {
 
                         return false;
                     }
@@ -1222,7 +1161,12 @@ public final class MobileProtocol {
                             setUuid(subBuilder.buildPartial());
                             break;
                         }
-                        case 18: {
+                        case 16: {
+                            bitField0_ |= 0x00000002;
+                            oneWay_ = input.readBool();
+                            break;
+                        }
+                        case 26: {
                             akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.Builder subBuilder = akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.newBuilder();
                             if (hasActorInfo()) {
                                 subBuilder.mergeFrom(getActorInfo());
@@ -1231,12 +1175,16 @@ public final class MobileProtocol {
                             setActorInfo(subBuilder.buildPartial());
                             break;
                         }
-                        case 24: {
-                            bitField0_ |= 0x00000004;
-                            oneWay_ = input.readBool();
+                        case 34: {
+                            akka.mobile.protocol.MobileProtocol.UuidProtocol.Builder subBuilder = akka.mobile.protocol.MobileProtocol.UuidProtocol.newBuilder();
+                            if (hasAnswerFor()) {
+                                subBuilder.mergeFrom(getAnswerFor());
+                            }
+                            input.readMessage(subBuilder, extensionRegistry);
+                            setAnswerFor(subBuilder.buildPartial());
                             break;
                         }
-                        case 34: {
+                        case 42: {
                             akka.mobile.protocol.MobileProtocol.MessageProtocol.Builder subBuilder = akka.mobile.protocol.MobileProtocol.MessageProtocol.newBuilder();
                             if (hasMessage()) {
                                 subBuilder.mergeFrom(getMessage());
@@ -1245,22 +1193,13 @@ public final class MobileProtocol {
                             setMessage(subBuilder.buildPartial());
                             break;
                         }
-                        case 42: {
+                        case 50: {
                             akka.mobile.protocol.MobileProtocol.ExceptionProtocol.Builder subBuilder = akka.mobile.protocol.MobileProtocol.ExceptionProtocol.newBuilder();
                             if (hasException()) {
                                 subBuilder.mergeFrom(getException());
                             }
                             input.readMessage(subBuilder, extensionRegistry);
                             setException(subBuilder.buildPartial());
-                            break;
-                        }
-                        case 50: {
-                            akka.mobile.protocol.MobileProtocol.UuidProtocol.Builder subBuilder = akka.mobile.protocol.MobileProtocol.UuidProtocol.newBuilder();
-                            if (hasSupervisorUuid()) {
-                                subBuilder.mergeFrom(getSupervisorUuid());
-                            }
-                            input.readMessage(subBuilder, extensionRegistry);
-                            setSupervisorUuid(subBuilder.buildPartial());
                             break;
                         }
                         case 58: {
@@ -1276,11 +1215,6 @@ public final class MobileProtocol {
                             akka.mobile.protocol.MobileProtocol.MetadataEntryProtocol.Builder subBuilder = akka.mobile.protocol.MobileProtocol.MetadataEntryProtocol.newBuilder();
                             input.readMessage(subBuilder, extensionRegistry);
                             addMetadata(subBuilder.buildPartial());
-                            break;
-                        }
-                        case 74: {
-                            bitField0_ |= 0x00000100;
-                            cookie_ = input.readBytes();
                             break;
                         }
                     }
@@ -1338,11 +1272,36 @@ public final class MobileProtocol {
                 return this;
             }
 
-            // required .ActorInfoProtocol actorInfo = 2;
+            // required bool oneWay = 2;
+            private boolean oneWay_;
+
+            public boolean hasOneWay() {
+                return ((bitField0_ & 0x00000002) == 0x00000002);
+            }
+
+            public boolean getOneWay() {
+                return oneWay_;
+            }
+
+            public Builder setOneWay(boolean value) {
+                bitField0_ |= 0x00000002;
+                oneWay_ = value;
+
+                return this;
+            }
+
+            public Builder clearOneWay() {
+                bitField0_ = (bitField0_ & ~0x00000002);
+                oneWay_ = false;
+
+                return this;
+            }
+
+            // optional .ActorInfoProtocol actorInfo = 3;
             private akka.mobile.protocol.MobileProtocol.ActorInfoProtocol actorInfo_ = akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.getDefaultInstance();
 
             public boolean hasActorInfo() {
-                return ((bitField0_ & 0x00000002) == 0x00000002);
+                return ((bitField0_ & 0x00000004) == 0x00000004);
             }
 
             public akka.mobile.protocol.MobileProtocol.ActorInfoProtocol getActorInfo() {
@@ -1355,7 +1314,7 @@ public final class MobileProtocol {
                 }
                 actorInfo_ = value;
 
-                bitField0_ |= 0x00000002;
+                bitField0_ |= 0x00000004;
                 return this;
             }
 
@@ -1363,12 +1322,12 @@ public final class MobileProtocol {
                     akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.Builder builderForValue) {
                 actorInfo_ = builderForValue.build();
 
-                bitField0_ |= 0x00000002;
+                bitField0_ |= 0x00000004;
                 return this;
             }
 
             public Builder mergeActorInfo(akka.mobile.protocol.MobileProtocol.ActorInfoProtocol value) {
-                if (((bitField0_ & 0x00000002) == 0x00000002) &&
+                if (((bitField0_ & 0x00000004) == 0x00000004) &&
                         actorInfo_ != akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.getDefaultInstance()) {
                     actorInfo_ =
                             akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.newBuilder(actorInfo_).mergeFrom(value).buildPartial();
@@ -1376,47 +1335,71 @@ public final class MobileProtocol {
                     actorInfo_ = value;
                 }
 
-                bitField0_ |= 0x00000002;
+                bitField0_ |= 0x00000004;
                 return this;
             }
 
             public Builder clearActorInfo() {
                 actorInfo_ = akka.mobile.protocol.MobileProtocol.ActorInfoProtocol.getDefaultInstance();
 
-                bitField0_ = (bitField0_ & ~0x00000002);
-                return this;
-            }
-
-            // required bool oneWay = 3;
-            private boolean oneWay_;
-
-            public boolean hasOneWay() {
-                return ((bitField0_ & 0x00000004) == 0x00000004);
-            }
-
-            public boolean getOneWay() {
-                return oneWay_;
-            }
-
-            public Builder setOneWay(boolean value) {
-                bitField0_ |= 0x00000004;
-                oneWay_ = value;
-
-                return this;
-            }
-
-            public Builder clearOneWay() {
                 bitField0_ = (bitField0_ & ~0x00000004);
-                oneWay_ = false;
-
                 return this;
             }
 
-            // optional .MessageProtocol message = 4;
+            // optional .UuidProtocol answerFor = 4;
+            private akka.mobile.protocol.MobileProtocol.UuidProtocol answerFor_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
+
+            public boolean hasAnswerFor() {
+                return ((bitField0_ & 0x00000008) == 0x00000008);
+            }
+
+            public akka.mobile.protocol.MobileProtocol.UuidProtocol getAnswerFor() {
+                return answerFor_;
+            }
+
+            public Builder setAnswerFor(akka.mobile.protocol.MobileProtocol.UuidProtocol value) {
+                if (value == null) {
+                    throw new NullPointerException();
+                }
+                answerFor_ = value;
+
+                bitField0_ |= 0x00000008;
+                return this;
+            }
+
+            public Builder setAnswerFor(
+                    akka.mobile.protocol.MobileProtocol.UuidProtocol.Builder builderForValue) {
+                answerFor_ = builderForValue.build();
+
+                bitField0_ |= 0x00000008;
+                return this;
+            }
+
+            public Builder mergeAnswerFor(akka.mobile.protocol.MobileProtocol.UuidProtocol value) {
+                if (((bitField0_ & 0x00000008) == 0x00000008) &&
+                        answerFor_ != akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance()) {
+                    answerFor_ =
+                            akka.mobile.protocol.MobileProtocol.UuidProtocol.newBuilder(answerFor_).mergeFrom(value).buildPartial();
+                } else {
+                    answerFor_ = value;
+                }
+
+                bitField0_ |= 0x00000008;
+                return this;
+            }
+
+            public Builder clearAnswerFor() {
+                answerFor_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
+
+                bitField0_ = (bitField0_ & ~0x00000008);
+                return this;
+            }
+
+            // optional .MessageProtocol message = 5;
             private akka.mobile.protocol.MobileProtocol.MessageProtocol message_ = akka.mobile.protocol.MobileProtocol.MessageProtocol.getDefaultInstance();
 
             public boolean hasMessage() {
-                return ((bitField0_ & 0x00000008) == 0x00000008);
+                return ((bitField0_ & 0x00000010) == 0x00000010);
             }
 
             public akka.mobile.protocol.MobileProtocol.MessageProtocol getMessage() {
@@ -1429,7 +1412,7 @@ public final class MobileProtocol {
                 }
                 message_ = value;
 
-                bitField0_ |= 0x00000008;
+                bitField0_ |= 0x00000010;
                 return this;
             }
 
@@ -1437,12 +1420,12 @@ public final class MobileProtocol {
                     akka.mobile.protocol.MobileProtocol.MessageProtocol.Builder builderForValue) {
                 message_ = builderForValue.build();
 
-                bitField0_ |= 0x00000008;
+                bitField0_ |= 0x00000010;
                 return this;
             }
 
             public Builder mergeMessage(akka.mobile.protocol.MobileProtocol.MessageProtocol value) {
-                if (((bitField0_ & 0x00000008) == 0x00000008) &&
+                if (((bitField0_ & 0x00000010) == 0x00000010) &&
                         message_ != akka.mobile.protocol.MobileProtocol.MessageProtocol.getDefaultInstance()) {
                     message_ =
                             akka.mobile.protocol.MobileProtocol.MessageProtocol.newBuilder(message_).mergeFrom(value).buildPartial();
@@ -1450,22 +1433,22 @@ public final class MobileProtocol {
                     message_ = value;
                 }
 
-                bitField0_ |= 0x00000008;
+                bitField0_ |= 0x00000010;
                 return this;
             }
 
             public Builder clearMessage() {
                 message_ = akka.mobile.protocol.MobileProtocol.MessageProtocol.getDefaultInstance();
 
-                bitField0_ = (bitField0_ & ~0x00000008);
+                bitField0_ = (bitField0_ & ~0x00000010);
                 return this;
             }
 
-            // optional .ExceptionProtocol exception = 5;
+            // optional .ExceptionProtocol exception = 6;
             private akka.mobile.protocol.MobileProtocol.ExceptionProtocol exception_ = akka.mobile.protocol.MobileProtocol.ExceptionProtocol.getDefaultInstance();
 
             public boolean hasException() {
-                return ((bitField0_ & 0x00000010) == 0x00000010);
+                return ((bitField0_ & 0x00000020) == 0x00000020);
             }
 
             public akka.mobile.protocol.MobileProtocol.ExceptionProtocol getException() {
@@ -1478,7 +1461,7 @@ public final class MobileProtocol {
                 }
                 exception_ = value;
 
-                bitField0_ |= 0x00000010;
+                bitField0_ |= 0x00000020;
                 return this;
             }
 
@@ -1486,12 +1469,12 @@ public final class MobileProtocol {
                     akka.mobile.protocol.MobileProtocol.ExceptionProtocol.Builder builderForValue) {
                 exception_ = builderForValue.build();
 
-                bitField0_ |= 0x00000010;
+                bitField0_ |= 0x00000020;
                 return this;
             }
 
             public Builder mergeException(akka.mobile.protocol.MobileProtocol.ExceptionProtocol value) {
-                if (((bitField0_ & 0x00000010) == 0x00000010) &&
+                if (((bitField0_ & 0x00000020) == 0x00000020) &&
                         exception_ != akka.mobile.protocol.MobileProtocol.ExceptionProtocol.getDefaultInstance()) {
                     exception_ =
                             akka.mobile.protocol.MobileProtocol.ExceptionProtocol.newBuilder(exception_).mergeFrom(value).buildPartial();
@@ -1499,61 +1482,12 @@ public final class MobileProtocol {
                     exception_ = value;
                 }
 
-                bitField0_ |= 0x00000010;
+                bitField0_ |= 0x00000020;
                 return this;
             }
 
             public Builder clearException() {
                 exception_ = akka.mobile.protocol.MobileProtocol.ExceptionProtocol.getDefaultInstance();
-
-                bitField0_ = (bitField0_ & ~0x00000010);
-                return this;
-            }
-
-            // optional .UuidProtocol supervisorUuid = 6;
-            private akka.mobile.protocol.MobileProtocol.UuidProtocol supervisorUuid_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
-
-            public boolean hasSupervisorUuid() {
-                return ((bitField0_ & 0x00000020) == 0x00000020);
-            }
-
-            public akka.mobile.protocol.MobileProtocol.UuidProtocol getSupervisorUuid() {
-                return supervisorUuid_;
-            }
-
-            public Builder setSupervisorUuid(akka.mobile.protocol.MobileProtocol.UuidProtocol value) {
-                if (value == null) {
-                    throw new NullPointerException();
-                }
-                supervisorUuid_ = value;
-
-                bitField0_ |= 0x00000020;
-                return this;
-            }
-
-            public Builder setSupervisorUuid(
-                    akka.mobile.protocol.MobileProtocol.UuidProtocol.Builder builderForValue) {
-                supervisorUuid_ = builderForValue.build();
-
-                bitField0_ |= 0x00000020;
-                return this;
-            }
-
-            public Builder mergeSupervisorUuid(akka.mobile.protocol.MobileProtocol.UuidProtocol value) {
-                if (((bitField0_ & 0x00000020) == 0x00000020) &&
-                        supervisorUuid_ != akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance()) {
-                    supervisorUuid_ =
-                            akka.mobile.protocol.MobileProtocol.UuidProtocol.newBuilder(supervisorUuid_).mergeFrom(value).buildPartial();
-                } else {
-                    supervisorUuid_ = value;
-                }
-
-                bitField0_ |= 0x00000020;
-                return this;
-            }
-
-            public Builder clearSupervisorUuid() {
-                supervisorUuid_ = akka.mobile.protocol.MobileProtocol.UuidProtocol.getDefaultInstance();
 
                 bitField0_ = (bitField0_ & ~0x00000020);
                 return this;
@@ -1707,47 +1641,6 @@ public final class MobileProtocol {
                 metadata_.remove(index);
 
                 return this;
-            }
-
-            // optional string cookie = 9;
-            private java.lang.Object cookie_ = "";
-
-            public boolean hasCookie() {
-                return ((bitField0_ & 0x00000100) == 0x00000100);
-            }
-
-            public String getCookie() {
-                java.lang.Object ref = cookie_;
-                if (!(ref instanceof String)) {
-                    String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
-                    cookie_ = s;
-                    return s;
-                } else {
-                    return (String) ref;
-                }
-            }
-
-            public Builder setCookie(String value) {
-                if (value == null) {
-                    throw new NullPointerException();
-                }
-                bitField0_ |= 0x00000100;
-                cookie_ = value;
-
-                return this;
-            }
-
-            public Builder clearCookie() {
-                bitField0_ = (bitField0_ & ~0x00000100);
-                cookie_ = getDefaultInstance().getCookie();
-
-                return this;
-            }
-
-            void setCookie(com.google.protobuf.ByteString value) {
-                bitField0_ |= 0x00000100;
-                cookie_ = value;
-
             }
 
             // @@protoc_insertion_point(builder_scope:MobileMessageProtocol)
