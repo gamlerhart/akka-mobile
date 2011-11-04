@@ -10,18 +10,17 @@ import java.net.InetSocketAddress
  */
 
 class ClientSideSerialisation(messageSender: MessageSink, deviceAddress: ClientId) extends Serialisation {
-  def toAddressProtocol(actorRef: ActorRef) = {
+  def toAddressProtocol() = {
     AddressProtocol.newBuilder
       .setType(AddressType.DEVICE_ADDRESS)
       .setDeviceAddress(DeviceAddress.newBuilder().setAppId(deviceAddress.applicationId).setDeviceID(deviceAddress.clientId))
       .build
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, clientId: Either[ClientId, InetSocketAddress]): ActorRef = {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, nodeAddress: AddressProtocol, clientId: Either[ClientId, InetSocketAddress]): ActorRef = {
     val remoteActorId = refInfo.getClassOrServiceName
-    val homeAddress = refInfo.getNodeAddress
     val serverID = clientId.right.get
-    homeAddress.getType match {
+    nodeAddress.getType match {
       case AddressType.SERVICE_ADDRESS => {
         ClientRemoteActorRef(
           new InetSocketAddress(serverID.getHostName, serverID.getPort),

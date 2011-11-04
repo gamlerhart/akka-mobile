@@ -1,6 +1,5 @@
 package akka.mobile.testutils
 
-import akka.actor.ActorRef
 import akka.mobile.protocol.MobileProtocol.{DeviceAddress, AddressType, AddressProtocol, RemoteActorRefProtocol}
 import java.net.InetSocketAddress
 import akka.mobile.remote.{ClientId, Serialisation}
@@ -11,7 +10,7 @@ import akka.mobile.remote.{ClientId, Serialisation}
  */
 
 object MockSerialisation extends Serialisation {
-  def toAddressProtocol(actorRef: ActorRef) = mockAddress()
+  def toAddressProtocol() = mockAddress()
 
   def mockAddress() = {
     AddressProtocol.newBuilder()
@@ -21,7 +20,7 @@ object MockSerialisation extends Serialisation {
 
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, clientID: Either[ClientId, InetSocketAddress]) = {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, nodeAddress: AddressProtocol, clientID: Either[ClientId, InetSocketAddress]) = {
     null
   }
 }

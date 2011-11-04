@@ -60,6 +60,7 @@ trait TestMesssageProducer {
     }
     val mobileMsg = MobileMessageProtocol.newBuilder()
       .setUuid(newUUID())
+      .setNodeAddress(MockSerialisation.mockAddress())
       .setOneWay(true)
       .setActorInfo({
       ActorInfoProtocol.newBuilder()
@@ -69,7 +70,7 @@ trait TestMesssageProducer {
     })
     mobileMsg.setSender(RemoteActorRefProtocol.newBuilder()
       .setClassOrServiceName("mock-service-id")
-      .setNodeAddress(MockSerialisation.mockAddress()))
+    )
     AkkaMobileProtocol.newBuilder().setMessage(mobileMsg).build()
   }
 

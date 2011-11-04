@@ -27,6 +27,7 @@ trait Serialisation {
 
     val builder = MobileMessageProtocol.newBuilder()
       .setUuid(serializeUUID(replyUUID.getOrElse(new UUID())))
+      .setNodeAddress(toAddressProtocol())
       .setMessage(serializeMsg(msg))
       .setOneWay(replyUUID.isEmpty)
       .setActorInfo({
@@ -51,23 +52,25 @@ trait Serialisation {
 
     val builder = MobileMessageProtocol.newBuilder()
       .setUuid(serializeUUID(new UUID()))
+      .setNodeAddress(toAddressProtocol())
       .setMessage(serializeMsg(result))
       .setOneWay(true)
       .setAnswerFor(serializeUUID(responsID))
     builder.build()
   }
 
-  def toAddressProtocol(actorRef: ActorRef): AddressProtocol
+  def toAddressProtocol(): AddressProtocol
 
   def deSerializeSender(msg: MobileMessageProtocol, clientId: Either[ClientId, InetSocketAddress]): Option[ActorRef] = {
     if (msg.hasSender) {
-      Some(deSerializeActorRef(msg.getSender, clientId))
+      Some(deSerializeActorRef(msg.getSender, msg.getNodeAddress, clientId))
     } else {
       None
     }
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, clientId: Either[ClientId, InetSocketAddress]): ActorRef
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, nodeAddress: AddressProtocol,
+                          clientId: Either[ClientId, InetSocketAddress]): ActorRef
 
 
   private def toRemoteActorRefProtocol(actor: ActorRef): RemoteActorRefProtocol = actor match {
@@ -75,7 +78,6 @@ trait Serialisation {
 
       RemoteActorRefProtocol.newBuilder
         .setClassOrServiceName("uuid:" + localActor.uuid.toString)
-        .setNodeAddress(toAddressProtocol(localActor))
         .build
     case _ => throw new Error("Not implemented")
   }
