@@ -13,7 +13,7 @@ object TestServer {
 
   def withRunningServer(toRun: TestServerContext => Unit) {
     val port = NetworkUtils.findFreePort()
-    val server = NettyRemoteServer.start("localhost", port);
+    val server = NettyRemoteServer.start("152.96.235.59", port);
     toRun(TestServerContext(server, port))
     server.shutdownServerModule();
   }

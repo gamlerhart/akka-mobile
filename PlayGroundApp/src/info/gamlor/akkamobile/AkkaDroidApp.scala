@@ -3,11 +3,9 @@ package info.gamlor.akkamobile
 import android.app.Activity
 import android.os.Bundle
 import akka.actor.Actor
-import akka.config.Config
-import android.util.Log
-import android.telephony.TelephonyManager
-import android.content.Context
-import android.provider.Settings.Secure
+import akka.mobile.remote.MobileRemoteClient
+import akka.mobile.android.AndroidDevice
+import java.net.Socket
 
 class AkkaDroidApp extends Activity {
 
@@ -15,15 +13,20 @@ class AkkaDroidApp extends Activity {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main)
 
-    val telephonyManager = this.getSystemService(Context.TELEPHONY_SERVICE).asInstanceOf[TelephonyManager];
+    try {
+      val s = new Socket("152.96.235.59", 2552)
+      s.getInputStream
 
-    val id = telephonyManager.getDeviceId;
-    println(id);
+    } catch {
+      case e: Exception => {
+        e.printStackTrace()
+      }
+    }
 
-    val otehrId = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-    println(id);
+    val remote = MobileRemoteClient.createClient(AndroidDevice(this));
 
-    val r = Actor.actorOf[MyActor].start()
+
+    val r = Actor.actorOf(new MyActor(remote)).start()
     r ! "Start"
   }
 

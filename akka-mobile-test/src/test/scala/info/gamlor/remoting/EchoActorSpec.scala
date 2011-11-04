@@ -7,6 +7,7 @@ import org.scalatest.matchers.ShouldMatchers
 import akka.actor.{ActorRef, Actor}
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 import akka.mobile.remote.MobileRemoteClient
+import akka.mobile.testutils.TestDevice
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -15,7 +16,7 @@ import akka.mobile.remote.MobileRemoteClient
 
 class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
 
-
+  val client = MobileRemoteClient.createClient(TestDevice)
   "The Actor must " must {
 
     "receives message " in {
@@ -24,7 +25,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
         val barrier = new CountDownLatch(1)
         val local = Actor.actorOf(new ReceiveCheckActor(Some(barrier))).start()
         ctx.register("echo", local)
-        val echo = MobileRemoteClient.client.actorFor("echo", "localhost", ctx.port)
+        val echo = client.actorFor("echo", "localhost", ctx.port)
         echo ! "Hello-Receive-Only"
 
 
@@ -38,7 +39,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
       withRunningServer(ctx => {
         val local = Actor.actorOf(new ReceiveCheckActor(None)).start()
         ctx.register("echo", local)
-        val echo = MobileRemoteClient.client.actorFor("echo", "localhost", ctx.port)
+        val echo = client.actorFor("echo", "localhost", ctx.port)
         echo ! "Ask"
 
 
@@ -50,7 +51,7 @@ class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
       withRunningServer(ctx => {
         val local = Actor.actorOf(new ReceiveCheckActor(None)).start()
         ctx.register("echo", local)
-        val remoteEchoActor = MobileRemoteClient.client.actorFor("echo", "localhost", ctx.port)
+        val remoteEchoActor = client.actorFor("echo", "localhost", ctx.port)
         val finishedBarrier = new CountDownLatch(1)
         val clientActor = Actor.actorOf(new ClientReply(remoteEchoActor, finishedBarrier)).start();
 

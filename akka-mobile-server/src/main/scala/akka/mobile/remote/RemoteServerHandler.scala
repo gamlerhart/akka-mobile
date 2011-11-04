@@ -60,7 +60,7 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
       val clientId = si.asInstanceOf[RemoteDeviceActorRef].clientId;
       val oldChannel = clientChannels.put(si.asInstanceOf[RemoteDeviceActorRef].clientId, channel)
       if (oldChannel != channel) {
-        oldChannel.getCloseFuture.addListener(new ChannelFutureListener {
+        channel.getCloseFuture.addListener(new ChannelFutureListener {
           def operationComplete(future: ChannelFuture) {
             clientChannels.remove(clientId)
           }
