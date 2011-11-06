@@ -9,7 +9,7 @@ import java.net.InetSocketAddress
  */
 case class ServerInfo(hostName: String, port: Int)
 
-class ServerSideSerialisation(msgSink: MessageSink, serverInfo: ServerInfo) extends Serialisation {
+class ServerSideSerialisation(msgSink: MessageSink) extends Serialisation {
 
   def toAddressProtocol() = {
     AddressProtocol.newBuilder

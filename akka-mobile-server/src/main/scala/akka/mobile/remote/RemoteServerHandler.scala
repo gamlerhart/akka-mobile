@@ -17,12 +17,12 @@ import akka.mobile.protocol.MobileProtocol.{AddressType, MobileMessageProtocol, 
  */
 
 @ChannelHandler.Sharable
-class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo: ServerInfo)
+class RemoteServerHandler(channels: ChannelGroup, registry: Registry)
   extends SimpleChannelUpstreamHandler with MessageSink {
   private val clientChannels = new ConcurrentHashMap[ClientId, NettyChannel]()
-  private val serializer = new ServerSideSerialisation(this, serverInfo)
+  private val serializer = new ServerSideSerialisation(this)
   private val futures = new FutureResultHandling
-  private val dispatcher = new WireMessageDispatcher(registry, futures, this, new ServerSideSerialisation(this, serverInfo))
+  private val dispatcher = new WireMessageDispatcher(registry, futures, this, new ServerSideSerialisation(this))
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) {
     event.getMessage match {

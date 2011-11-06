@@ -5,7 +5,7 @@ import java.net.InetSocketAddress
 import akka.remote.netty.DefaultDisposableChannelGroup
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import org.jboss.netty.handler.execution.{OrderedMemoryAwareThreadPoolExecutor, ExecutionHandler}
-import java.util.concurrent.{TimeUnit, Executors}
+import java.util.concurrent.Executors
 import org.jboss.netty.channel._
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import akka.actor.ActorRef
@@ -41,7 +41,7 @@ object NettyRemoteServer {
     private val bootstrap = new ServerBootstrap(
       new NioServerSocketChannelFactory(Executors.newCachedThreadPool, Executors.newCachedThreadPool))
     private val openChannels: ChannelGroup = new DefaultDisposableChannelGroup("akka--mobile-server")
-    bootstrap.setPipelineFactory(new MobileServerPipelineFactory(openChannels, actorRegistry, new ServerInfo(hostName, portNumber)))
+    bootstrap.setPipelineFactory(new MobileServerPipelineFactory(openChannels, actorRegistry, config))
     bootstrap.setOption("backlog", config.BACKLOG)
     bootstrap.setOption("child.tcpNoDelay", true)
     bootstrap.setOption("child.keepAlive", true)
@@ -72,7 +72,9 @@ object NettyRemoteServer {
 
   }
 
-  class MobileServerPipelineFactory(channels: ChannelGroup, actorRegistry: Registry, serverInfo: ServerInfo) extends ChannelPipelineFactory {
+  class MobileServerPipelineFactory(channels: ChannelGroup,
+                                    actorRegistry: Registry,
+                                    config: ServerConfiguration) extends ChannelPipelineFactory {
     def getPipeline = {
       val lenDec = new ProtobufVarint32FrameDecoder()
       val lenPrep = new ProtobufVarint32LengthFieldPrepender()
@@ -82,12 +84,12 @@ object NettyRemoteServer {
 
       val executor = new ExecutionHandler(
         new OrderedMemoryAwareThreadPoolExecutor(
-          16,
-          0,
-          0,
-          60, TimeUnit.SECONDS));
+          config.EXECUTION_POOL_SIZE,
+          config.MAX_CHANNEL_MEMORY_SIZE,
+          config.MAX_TOTAL_MEMORY_SIZE,
+          config.EXECUTION_POOL_KEEPALIVE.length, config.EXECUTION_POOL_KEEPALIVE.unit));
 
-      val serverHandler = new RemoteServerHandler(channels, actorRegistry, serverInfo)
+      val serverHandler = new RemoteServerHandler(channels, actorRegistry)
       val stages: List[ChannelHandler]
       = lenDec :: protobufDec :: lenPrep :: protobufEnc :: executor :: serverHandler :: Nil
       new StaticChannelPipeline(stages: _*)
