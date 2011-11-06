@@ -43,12 +43,12 @@ trait SocketRepresentation {
   def close()
 }
 
-class TCPSocket(addr: InetSocketAddress) extends SocketRepresentation {
+class TCPSocket(addr: InetSocketAddress, config: MobileConfiguration) extends SocketRepresentation {
   val socket = {
     val s = new Socket()
     s.setKeepAlive(true)
     s.setTcpNoDelay(true)
-    s.connect(addr, 5000)
+    s.connect(addr, config.CONNECT_TIMEOUT.toMillis.asInstanceOf[Int])
     s
   }
 

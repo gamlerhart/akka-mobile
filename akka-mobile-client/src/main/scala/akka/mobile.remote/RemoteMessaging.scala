@@ -16,12 +16,15 @@ import akka.dispatch.{CompletableFuture, Dispatchers}
  */
 
 class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
+                      config: MobileConfiguration,
                       clientId: ClientId) {
   val registry: Registry = new Registry
   val futures: FutureResultHandling = new FutureResultHandling
   private val messangers = scala.collection.mutable.Map[InetSocketAddress, ActorRef]()
   private val supervisor = Supervisor(SupervisorConfig(
-    AllForOneStrategy(List(classOf[Exception]), 5, 10000), Nil
+    AllForOneStrategy(List(classOf[Exception]),
+      config.RETRIES_ON_CONNECTION_FAILURES,
+      config.RETRIES_TIME_FRAME.toMillis.asInstanceOf[Int]), Nil
   ))
   val msgSink: MessageSink = new MessageSink() {
 
@@ -90,13 +93,13 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
 
 
 object RemoteMessaging {
-  val DEFAULT_TCP_SOCKET_FACTOR = (address: InetSocketAddress) => new TCPSocket(address)
+  val DEFAULT_TCP_SOCKET_FACTOR = (address: InetSocketAddress) => new TCPSocket(address, MobileConfiguration.defaultConfig)
 
-  def apply(clientID: ClientId) = new RemoteMessaging(DEFAULT_TCP_SOCKET_FACTOR, clientID)
+  def apply(clientID: ClientId) = new RemoteMessaging(DEFAULT_TCP_SOCKET_FACTOR, MobileConfiguration.defaultConfig, clientID)
 
 
   def apply(socketFactory: InetSocketAddress => SocketRepresentation, clientID: ClientId)
-  = new RemoteMessaging(socketFactory, clientID)
+  = new RemoteMessaging(socketFactory, MobileConfiguration.defaultConfig, clientID)
 }
 
 
