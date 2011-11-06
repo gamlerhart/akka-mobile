@@ -10,8 +10,8 @@ import akka.config.Configuration
  */
 
 class ServerConfigurationSpec extends Spec with ShouldMatchers {
-  val emptyInstance = new ServerConfig(Configuration.fromResource("serverEmptyConfig.conf"))
-  val configuredInstance = new ServerConfig(Configuration.fromResource("serverConfiguredConfig.conf"))
+  val emptyInstance = new ServerConfiguration(Configuration.fromResource("serverEmptyConfig.conf"))
+  val configuredInstance = new ServerConfiguration(Configuration.fromResource("serverConfiguredConfig.conf"))
 
 
   describe("Empty Default Configuration") {
@@ -19,11 +19,17 @@ class ServerConfigurationSpec extends Spec with ShouldMatchers {
       emptyInstance.HOST should be(None)
       emptyInstance.PORT should be(None)
     }
+    it("has backlog of 4096") {
+      emptyInstance.BACKLOG should be(4096)
+    }
   }
   describe("Configured Configuration") {
     it("has not port and host") {
       configuredInstance.HOST should be(Some("0.0.0.0"))
       configuredInstance.PORT should be(Some(1337))
+    }
+    it("has backlog of 1024") {
+      configuredInstance.BACKLOG should be(1024)
     }
   }
 

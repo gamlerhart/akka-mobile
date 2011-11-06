@@ -1,6 +1,5 @@
 package akka.mobile.remote
 
-import java.lang.IllegalStateException
 import org.jboss.netty.bootstrap.ServerBootstrap
 import java.net.InetSocketAddress
 import akka.remote.netty.DefaultDisposableChannelGroup
@@ -12,6 +11,7 @@ import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import akka.actor.ActorRef
 import group.ChannelGroup
 import org.jboss.netty.handler.codec.protobuf.{ProtobufVarint32LengthFieldPrepender, ProtobufVarint32FrameDecoder, ProtobufEncoder, ProtobufDecoder}
+import java.lang.IllegalStateException
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -19,10 +19,21 @@ import org.jboss.netty.handler.codec.protobuf.{ProtobufVarint32LengthFieldPrepen
  */
 object NettyRemoteServer {
   def start(hostName: String, portNumber: Int): RemoteServer
-  = new NettyServer(hostName, portNumber)
+  = new NettyServer(hostName, portNumber, ServerConfiguration.defaultConfig)
+
+  def start(): RemoteServer
+  = {
+    val cfg = ServerConfiguration.defaultConfig
+    if (cfg.HOST.isEmpty || cfg.PORT.isEmpty) {
+      throw new IllegalStateException("In order to use this method you need to configure the port and host" +
+        " of the server in the akka configuration")
+    }
+    new NettyServer(cfg.HOST.get,
+      cfg.PORT.get, cfg)
+  }
 
 
-  class NettyServer(hostName: String, portNumber: Int) extends RemoteServer {
+  class NettyServer(hostName: String, portNumber: Int, config: ServerConfiguration) extends RemoteServer {
     private val actorRegistry = new Registry();
     @volatile var isAlive = true
     val name = "NettyRemoteServer@" + hostName + ":" + portNumber
@@ -31,7 +42,7 @@ object NettyRemoteServer {
       new NioServerSocketChannelFactory(Executors.newCachedThreadPool, Executors.newCachedThreadPool))
     private val openChannels: ChannelGroup = new DefaultDisposableChannelGroup("akka--mobile-server")
     bootstrap.setPipelineFactory(new MobileServerPipelineFactory(openChannels, actorRegistry, new ServerInfo(hostName, portNumber)))
-    bootstrap.setOption("backlog", 1024)
+    bootstrap.setOption("backlog", config.BACKLOG)
     bootstrap.setOption("child.tcpNoDelay", true)
     bootstrap.setOption("child.keepAlive", true)
 
