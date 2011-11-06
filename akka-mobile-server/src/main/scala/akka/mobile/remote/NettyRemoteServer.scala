@@ -1,17 +1,17 @@
 package akka.mobile.remote
 
-import java.lang.IllegalStateException
 import org.jboss.netty.bootstrap.ServerBootstrap
 import java.net.InetSocketAddress
 import akka.remote.netty.DefaultDisposableChannelGroup
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import org.jboss.netty.handler.execution.{OrderedMemoryAwareThreadPoolExecutor, ExecutionHandler}
-import java.util.concurrent.{TimeUnit, Executors}
+import java.util.concurrent.Executors
 import org.jboss.netty.channel._
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import akka.actor.ActorRef
 import group.ChannelGroup
 import org.jboss.netty.handler.codec.protobuf.{ProtobufVarint32LengthFieldPrepender, ProtobufVarint32FrameDecoder, ProtobufEncoder, ProtobufDecoder}
+import java.lang.IllegalStateException
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -19,10 +19,21 @@ import org.jboss.netty.handler.codec.protobuf.{ProtobufVarint32LengthFieldPrepen
  */
 object NettyRemoteServer {
   def start(hostName: String, portNumber: Int): RemoteServer
-  = new NettyServer(hostName, portNumber)
+  = new NettyServer(hostName, portNumber, ServerConfiguration.defaultConfig)
+
+  def start(): RemoteServer
+  = {
+    val cfg = ServerConfiguration.defaultConfig
+    if (cfg.HOST.isEmpty || cfg.PORT.isEmpty) {
+      throw new IllegalStateException("In order to use this method you need to configure the port and host" +
+        " of the server in the akka configuration")
+    }
+    new NettyServer(cfg.HOST.get,
+      cfg.PORT.get, cfg)
+  }
 
 
-  class NettyServer(hostName: String, portNumber: Int) extends RemoteServer {
+  class NettyServer(hostName: String, portNumber: Int, config: ServerConfiguration) extends RemoteServer {
     private val actorRegistry = new Registry();
     @volatile var isAlive = true
     val name = "NettyRemoteServer@" + hostName + ":" + portNumber
@@ -30,8 +41,8 @@ object NettyRemoteServer {
     private val bootstrap = new ServerBootstrap(
       new NioServerSocketChannelFactory(Executors.newCachedThreadPool, Executors.newCachedThreadPool))
     private val openChannels: ChannelGroup = new DefaultDisposableChannelGroup("akka--mobile-server")
-    bootstrap.setPipelineFactory(new MobileServerPipelineFactory(openChannels, actorRegistry, new ServerInfo(hostName, portNumber)))
-    bootstrap.setOption("backlog", 1024)
+    bootstrap.setPipelineFactory(new MobileServerPipelineFactory(openChannels, actorRegistry, config))
+    bootstrap.setOption("backlog", config.BACKLOG)
     bootstrap.setOption("child.tcpNoDelay", true)
     bootstrap.setOption("child.keepAlive", true)
 
@@ -61,7 +72,9 @@ object NettyRemoteServer {
 
   }
 
-  class MobileServerPipelineFactory(channels: ChannelGroup, actorRegistry: Registry, serverInfo: ServerInfo) extends ChannelPipelineFactory {
+  class MobileServerPipelineFactory(channels: ChannelGroup,
+                                    actorRegistry: Registry,
+                                    config: ServerConfiguration) extends ChannelPipelineFactory {
     def getPipeline = {
       val lenDec = new ProtobufVarint32FrameDecoder()
       val lenPrep = new ProtobufVarint32LengthFieldPrepender()
@@ -71,12 +84,12 @@ object NettyRemoteServer {
 
       val executor = new ExecutionHandler(
         new OrderedMemoryAwareThreadPoolExecutor(
-          16,
-          0,
-          0,
-          60, TimeUnit.SECONDS));
+          config.EXECUTION_POOL_SIZE,
+          config.MAX_CHANNEL_MEMORY_SIZE,
+          config.MAX_TOTAL_MEMORY_SIZE,
+          config.EXECUTION_POOL_KEEPALIVE.length, config.EXECUTION_POOL_KEEPALIVE.unit));
 
-      val serverHandler = new RemoteServerHandler(channels, actorRegistry, serverInfo)
+      val serverHandler = new RemoteServerHandler(channels, actorRegistry)
       val stages: List[ChannelHandler]
       = lenDec :: protobufDec :: lenPrep :: protobufEnc :: executor :: serverHandler :: Nil
       new StaticChannelPipeline(stages: _*)

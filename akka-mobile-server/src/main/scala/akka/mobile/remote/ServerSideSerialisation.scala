@@ -1,6 +1,5 @@
 package akka.mobile.remote
 
-import akka.actor.ActorRef
 import akka.mobile.protocol.MobileProtocol._
 import java.net.InetSocketAddress
 
@@ -10,21 +9,20 @@ import java.net.InetSocketAddress
  */
 case class ServerInfo(hostName: String, port: Int)
 
-class ServerSideSerialisation(msgSink: MessageSink, serverInfo: ServerInfo) extends Serialisation {
+class ServerSideSerialisation(msgSink: MessageSink) extends Serialisation {
 
-  def toAddressProtocol(actorRef: ActorRef) = {
+  def toAddressProtocol() = {
     AddressProtocol.newBuilder
       .setType(AddressType.SERVICE_ADDRESS)
       .build()
 
   }
 
-  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, clientID: Either[ClientId, InetSocketAddress]) = {
+  def deSerializeActorRef(refInfo: RemoteActorRefProtocol, nodeAddress: AddressProtocol, clientID: Either[ClientId, InetSocketAddress]) = {
     val remoteActorId = refInfo.getClassOrServiceName
-    val homeAddress = refInfo.getNodeAddress
-    homeAddress.getType match {
+    nodeAddress.getType match {
       case AddressType.DEVICE_ADDRESS => {
-        RemoteDeviceActorRef(deserializeClientId(homeAddress.getDeviceAddress),
+        RemoteDeviceActorRef(deserializeClientId(nodeAddress.getDeviceAddress),
           remoteActorId, msgSink)
       }
       case AddressType.SERVICE_ADDRESS => throw new Error("TODO")

@@ -11,9 +11,6 @@ import com.eaio.uuid.UUID
  */
 
 trait MessageSink {
-  def sendResponse(uuid: UUID, result: Right[Throwable, Any]) {
-    throw new Error("TODO")
-  }
 
   def ask(clientId: Either[ClientId, InetSocketAddress], serviceId: String,
           message: Any, sender: Option[ActorRef], future: CompletableFuture[Any])

@@ -2,13 +2,13 @@ package akka.mobile.remote
 
 import org.jboss.netty.channel.group.ChannelGroup
 import akka.mobile.protocol.MobileProtocol.ActorType._
-import akka.mobile.protocol.MobileProtocol.{MobileMessageProtocol, AkkaMobileProtocol}
 import java.util.concurrent.ConcurrentHashMap
 import akka.actor.{ActorRef, IllegalActorStateException}
 import java.net.InetSocketAddress
 import org.jboss.netty.channel.{ChannelFuture, ChannelFutureListener, ChannelStateEvent, MessageEvent, ChannelHandlerContext, SimpleChannelUpstreamHandler, ChannelHandler, Channel => NettyChannel}
 import com.eaio.uuid.UUID
 import akka.dispatch.CompletableFuture
+import akka.mobile.protocol.MobileProtocol.{AddressType, MobileMessageProtocol, AkkaMobileProtocol}
 
 /**
  *
@@ -17,12 +17,12 @@ import akka.dispatch.CompletableFuture
  */
 
 @ChannelHandler.Sharable
-class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo: ServerInfo)
+class RemoteServerHandler(channels: ChannelGroup, registry: Registry)
   extends SimpleChannelUpstreamHandler with MessageSink {
   private val clientChannels = new ConcurrentHashMap[ClientId, NettyChannel]()
-  private val serializer = new ServerSideSerialisation(this, serverInfo)
+  private val serializer = new ServerSideSerialisation(this)
   private val futures = new FutureResultHandling
-  private val dispatcher = new WireMessageDispatcher(registry, futures, this, new ServerSideSerialisation(this, serverInfo))
+  private val dispatcher = new WireMessageDispatcher(registry, futures, this, new ServerSideSerialisation(this))
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) {
     event.getMessage match {
@@ -70,14 +70,11 @@ class RemoteServerHandler(channels: ChannelGroup, registry: Registry, serverInfo
 
   private def dispatchMessage(message: MobileMessageProtocol, channel: NettyChannel) {
 
-    val ctxInfo = channel.getRemoteAddress.asInstanceOf[InetSocketAddress]
-    val senderInfo = if (message.hasSender) {
-      serializer.deSerializeActorRef(message.getSender, Right(ctxInfo))
-    } else {
-      throw new Error("Server cannot deal without client info")
+    if (message.getNodeAddress.getType == AddressType.SERVICE_ADDRESS) {
+      throw new IllegalArgumentException("Cannot deal with service addresses")
     }
 
-    val clientId = senderInfo.asInstanceOf[RemoteDeviceActorRef].clientId;
+    val clientId = serializer.deserializeClientId(message.getNodeAddress.getDeviceAddress);
     val oldChannel = clientChannels.put(clientId, channel)
     if (oldChannel != channel) {
       channel.getCloseFuture.addListener(new ChannelFutureListener {
