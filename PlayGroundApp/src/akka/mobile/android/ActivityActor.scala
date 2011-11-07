@@ -1,5 +1,7 @@
 package akka.mobile.android
 
+import akka.actor.{UntypedChannel, ActorRef, Actor, ForwardableChannel}
+
 
 /**
  * @author roman.stoffel@gamlor.info

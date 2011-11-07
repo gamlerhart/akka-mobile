@@ -1,6 +1,5 @@
 package akka.mobile.android
 
-import akka.actor.ActorRef
 import android.os.Handler
 import java.util.concurrent.{TimeUnit, AbstractExecutorService}
 

@@ -5,12 +5,23 @@ import android.os.Bundle
 import akka.actor.Actor
 import akka.mobile.android.{ActivityActor, AndroidDevice}
 import android.util.Log
+import akka.util.ReflectiveAccess
 
 class AkkaDroidApp extends Activity with ActivityActor {
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main)
+
+    try {
+      val t = ReflectiveAccess.getClassFor[Actor]("akka.mobile.android.LogcatLogger")
+      val actor = Actor.actorOf(t.right.get)
+      Log.i("i", actor.toString)
+    } catch {
+      case e: Throwable => {
+        e.printStackTrace()
+      }
+    }
 
     val otherGuy = Actor.actorOf[OtherTestActor].start()
     otherGuy ! "Start"
@@ -27,7 +38,7 @@ class OtherTestActor extends Actor {
 
   protected def receive = {
     case "Start" => {
-      self.reply("Answer")
+      throw new Exception("Oh Boy")
     }
   }
 }
