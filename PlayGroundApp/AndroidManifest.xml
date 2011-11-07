@@ -4,10 +4,17 @@
           android:versionCode="1"
           android:versionName="1.0"
           android:debuggable="true">
+
+    <!-- Of course it's silly to have the project test itself. However for now it's just fine -->
+    <instrumentation android:name="android.test.InstrumentationTestRunner"
+                     android:targetPackage="info.gamlor.akkamobile"
+                     android:label="Tests for info.gamlor.akkamobile"/>
+
     <uses-permission
             android:name="android.permission.INTERNET"/>
 
     <application android:label="@string/app_name" android:icon="@drawable/icon" android:debuggable="true">
+        <uses-library android:name="android.test.runner"/>
         <activity android:name="AkkaDroidApp"
                   android:label="@string/app_name">
             <intent-filter>
