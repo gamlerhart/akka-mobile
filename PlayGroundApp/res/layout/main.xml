@@ -1,13 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<TextView
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="Hello World, AkkaDroidApp New"
-    />
-</LinearLayout>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+        >
 
+    <EditText
+            android:id="@+id/enterMsgBox"
+            android:layout_margin="5.0sp"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@+id/sendButton"/>
+    <Button
+            android:text="Send"
+            android:id="@+id/sendButton"
+            android:textSize="18sp"
+            android:layout_marginBottom="5.0sp"
+            android:layout_marginTop="10.0sp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_height="wrap_content"
+            android:layout_width="80.0sp">
+    </Button>
+    <EditText android:id="@+id/chatMsgs"
+              android:layout_height="fill_parent"
+              android:layout_width="fill_parent"
+              android:text="Welcome the worlds uglies chat client"
+              android:editable="false"
+              android:singleLine="false"
+              android:textSize="18sp"
+              android:scrollbars="vertical"
+              android:isScrollContainer="true"
+              android:gravity="left|top"
+              android:layout_above="@id/enterMsgBox"
+            />
+</RelativeLayout>

@@ -2,6 +2,7 @@ package akka.mobile.android
 
 import android.os.Handler
 import java.util.concurrent.{TimeUnit, AbstractExecutorService}
+import akka.dispatch._
 
 /**
  * @author roman.stoffel@gamlor.info

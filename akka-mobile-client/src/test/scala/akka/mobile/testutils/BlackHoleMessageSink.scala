@@ -1,6 +1,6 @@
 package akka.mobile.testutils
 
-import akka.mobile.remote.{ClientId, MessageSink}
+import akka.mobile.communication.{ClientId, MessageSink}
 import java.net.InetSocketAddress
 import akka.actor.ActorRef
 import com.eaio.uuid.UUID
@@ -13,7 +13,7 @@ import akka.dispatch.CompletableFuture
  */
 
 object BlackHoleMessageSink extends MessageSink {
-  def send(clientId: Either[ClientId, InetSocketAddress], serviceId: String, message: Any,
+  def send(clientId: Either[ClientId, InetSocketAddress], serviceId: Either[String, UUID], message: Any,
            sender: Option[ActorRef], replyId: Option[UUID]) {
 
   }

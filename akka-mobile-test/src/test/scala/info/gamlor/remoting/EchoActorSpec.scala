@@ -2,12 +2,13 @@ package info.gamlor.remoting
 
 import org.scalatest.WordSpec
 import akka.testkit.TestKit
-import TestServer._
+import akka.mobile.testutils.TestServer._
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.{ActorRef, Actor}
 import akka.mobile.testutils.{NetworkUtils, TestDevice}
-import akka.mobile.remote.{NettyRemoteServer, MobileRemoteClient}
+import akka.mobile.server.NettyRemoteServer
 import java.util.concurrent._
+import akka.mobile.client.MobileRemoteClient
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -16,7 +17,7 @@ import java.util.concurrent._
 
 class EchoActorSpec extends WordSpec with ShouldMatchers with TestKit {
 
-  val client = MobileRemoteClient.createClient(TestDevice)
+  val client = MobileRemoteClient.createClient(TestDevice())
   "The Actor " must {
 
     "receives message " in {

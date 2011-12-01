@@ -10,6 +10,10 @@ import akka.actor.{UntypedChannel, ActorRef, Actor, ForwardableChannel}
 
 trait ActivityActor extends ForwardableChannel {
 
+  final def self: ActorRef = {
+    innerDispatchingActor
+  }
+
   protected def receive: Actor.Receive
 
   val innerDispatchingActor = Actor.actorOf(new ActorProxy(this)).start()

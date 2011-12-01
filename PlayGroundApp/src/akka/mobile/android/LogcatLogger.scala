@@ -19,7 +19,6 @@ class LogcatLogger extends Actor {
   self.id = "LogCat-Logger"
   self.dispatcher = EventHandlerDispatcher
 
-
   def formattedTimestamp = DateFormat.getInstance.format(new Date)
 
   def receive = {

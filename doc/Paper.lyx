@@ -1,0 +1,500 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+\title{Comparing Language Workbenches}
+\author{
+        Roman Stoffel \\
+        University of Applied Sciences Rapperswil (HSR),  \underline{Switzerland}\\
+\\
+       Akka-Mobile	
+}
+\date{\today}
+\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage{fixltx2e}
+\usepackage{nonfloat}
+\usepackage{ccaption}
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize 11
+\spacing single
+\use_hyperref true
+\pdf_title "Comparing Language Workbenches"
+\pdf_author "Roman Stoffel"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered true
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 2
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize default
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine natbib_numerical
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 3cm
+\topmargin 3cm
+\rightmargin 3cm
+\bottommargin 3cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Akka Mobile
+\end_layout
+
+\begin_layout Abstract
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ Aliquam quis tellus vel odio sollicitudin interdum.
+ Nunc viverra convallis pharetra.
+ Ut eget quam nec erat aliquet aliquam consectetur ac mi.
+ Etiam nec condimentum massa.
+ Suspendisse potenti.
+ Phasellus consequat metus ut lorem tincidunt a tempus lorem convallis.
+ Donec vel lectus felis.
+ Quisque gravida tincidunt orci eget dapibus.
+ Donec dictum ultrices mauris, vitae laoreet lectus auctor a.
+ Cum sociis natoque penatibus et magnis dis parturient montes, nascetur
+ ridiculus mus.
+ Sed aliquet, diam vel semper dictum, erat ligula placerat sem, a accumsan
+ tortor nunc non sapien.
+ In in rutrum mi.
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+The number of smart phones and other powefull devices is raising every day
+ and mobile computing get more and more important.
+ Most application on these devices commicate with a centeral service.
+ This can be simple communication like getting some data from a web service
+ or it can be complex soft realtime communication like in games or social
+ network applications.
+ When communication with mobile devices application face the challanges
+ like unreliable connections, changing networks and offline devices.
+ The Akka Mobile project tries to help with these challanges
+\end_layout
+
+\begin_layout Subsection
+What is Akka
+\end_layout
+
+\begin_layout Standard
+Akka is a framework for developing highly concurrent and distrubuted application
+ on the Java Virtual Machine (JVM).
+ To achive this it uses the actor model as its core development concept.
+ Why does it use actor the actor model? From the Akka website
+\begin_inset CommandInset citation
+LatexCommand citep
+key "akkaIOWebsite"
+
+\end_inset
+
+: 
+\end_layout
+
+\begin_layout Quotation
+“We believe that writing correct concurrent, fault-tolerant and scalable
+ applications is too hard.
+ Most of the time it’s because we are using the wrong tools and the wrong
+ level of abstraction.
+ Akka is here to change that.
+ Using the Actor Model together with Software Transactional Memory we raise
+ the abstraction level and provide a better platform to build correct concurrent
+ and scalable applications.”
+\end_layout
+
+\begin_layout Standard
+The strict state isolation of actors and well defined communcation model
+ also brings benefits for the fault tolerance.
+ Mainly because actors can crash without affecting any global state.
+ This is another major design philosophy of Akka
+\begin_inset CommandInset citation
+LatexCommand citep
+key "akkaIOWebsite"
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Quote
+“For fault-tolerance we adopt the “Let it crash” / “Embrace failure” model
+ which have been used with great success in the telecom industry to build
+ applications that self-heal, systems that never stop.”
+\end_layout
+
+\begin_layout Standard
+Akka brings a lot of services around the actor model, like HTTP, message
+ queue integrations etc.
+ Besides the actor related components it also brings other concurrency related
+ abstractions, like Software Transaction Memory.
+\end_layout
+
+\begin_layout Subsection
+Why Akka Mobile
+\end_layout
+
+\begin_layout Standard
+The services which Akka provides are intended for server and clustering
+ application.
+ Especially since Actor model is a perfect fit for a distributed and fault
+ tolerant computation.
+ Why do we want to bring Akka to mobile devices? Let's think about this
+ for a moment.
+ We have many mobile devices, with tons of capabilities and power.
+ Then we have server cluster which provides services to all these devices.
+ Isn't this a perfect example of an extremely distributed computing system?
+ 
+\end_layout
+
+\begin_layout Standard
+With Akka mobile we to make it easier to create mobile applications which
+ need to react to events quickly and have complex interaction between the
+ devices and the server.
+ Especially where we also want to actively notify clients about events happening.
+ We should be able to interact with the mobile device like it is just another
+ node in our cluster.
+\end_layout
+
+\begin_layout Standard
+Since the connection on mobile devices is very unreliable the communication
+ has to be fault tolerant.
+ In Akka we can deal with faults by creating supervision hirarchies.
+ 
+\end_layout
+
+\begin_layout Subsection
+Challenges
+\end_layout
+
+\begin_layout Standard
+The main challenge is to get the communication between the server and mobile
+ devices right.
+ We have a heavy asymmetry here.
+ The client can easily connect to the server by knowing the host name and
+ port.
+ However when the server wants to reach out to a mobile device he needs
+ another addressing model.
+ He cannot simple use the host or ip of a device, since those a constantly
+ changing when the client is passing along different networks.
+ We also cannot simply open a connection to the device, since it isn't setup
+ to accept incomming connections.
+ Event worse, the mobile device is likely to be offline sometimes.
+ The solution has to deal with thise issues and limitations.
+ 
+\end_layout
+
+\begin_layout Section
+The Communication Concept
+\end_layout
+
+\begin_layout Standard
+As previously mentioned the communication over the unreliable connections
+ is the main challenge to be solved.
+\end_layout
+
+\begin_layout Subsection
+Akka Remote Actors
+\end_layout
+
+\begin_layout Standard
+Let's first talk about how the Akka remote actors communication is implemented.
+ The remote actor implementation is basically symmetric.
+ The implementation for a 'client' and a 'server' is the same.
+ To send a message to a remote actor the client uses the host and port of
+ the machine which hosts the actor and connects to it.
+ If the remote actor directly responds it will go across the same connection.
+ However it the remote actor might respond later the server reconnects to
+ the original machine using its host and port.
+ So there not clear destinction between 'client' and 'server'.
+ Both machines can initiate a connection to talk to each other.
+\end_layout
+
+\begin_layout Subsection
+Client Initiated Communication
+\end_layout
+
+\begin_layout Standard
+In a mobile-device scenario this is bit different.
+ We have a clear distinction: A small, lightweight application on the device
+ and a server (-cluster) which provides some services.
+ The client usually maintains a single connection to the server, but needs
+ to be small and lightweight.
+ The server can be a large heavyweight application, but needs to maintain
+ many connections to many devices.
+\end_layout
+
+\begin_layout Standard
+Furthermore a the connection initiation works only in one way, from the
+ client to the server.
+ The server cannot directly contact a client.
+ The client has almost certainly a dynamic, no public, changing IP as it
+ passed different networks: For example walking away from a Wi-Fi at home
+ to a mobile network to another Wi-Fi hotspot.
+ That means there not way we can initiate a connection from the server to
+ the mobile device.
+ 
+\end_layout
+
+\begin_layout Standard
+Once the connection is established we can communicate between the server
+ and the client.
+ However the client might gets disconnected.
+ In this case the client should attempt to reconnect to the server.
+ Meanwhile the server needs to handle the situation where the client might
+ have reconnected.
+ 
+\end_layout
+
+\begin_layout Standard
+To deal with these issues we address the devices with a client id.
+ The client id identifies the device and the running application.
+ As soon as a client connects on the server we assiosiate the client-id
+ with the current connection.
+ In case the client reconnects we re-assiosiate the client-id with the new
+ connection.
+ When an actor needs to reply or send a message to an actor on the mobile
+ device we lookup if the last known connection to the client and sent it
+ over that channel.
+ 
+\end_layout
+
+\begin_layout Subsection
+Push-Notification / Messages from the Server
+\end_layout
+
+\begin_layout Standard
+As long as a connection is available to a client the server can freely send
+ messages to actors on the client.
+ However what happens with the client isn't connected at the moment? Either
+ because the application isn't running or because the client has no network
+ available? It would be nice if this situation is handled properly.
+ 
+\end_layout
+
+\begin_layout Standard
+Since Android 2.2 Google provides a Cloud to Mobile Device (C2MD)
+\begin_inset CommandInset citation
+LatexCommand citep
+key "c2mdWebiste"
+
+\end_inset
+
+ service which allows you to push messages to the Phone.
+ The service manages all communication details and delivers the message
+ as soon as the Phone is connected.
+ Another nice thing about the service is that we can deliver messages even
+ when the application is not running.
+ That means we can initiate and send a message to a not running application
+ and the applicaition will recieve it.
+\end_layout
+
+\begin_layout Standard
+That means we need a fall back mechanism in our Akka mobile implementation
+ which can use C2MD to send messages.
+ Basically it will contact the C2MD service when it cannot find any active
+ connection to the device and sent the message with C2MD.
+ When the client receives the message he has obviously a working connection
+ and can reconnect to the server to receive further messages.
+\end_layout
+
+\begin_layout Section
+Api Example Tour
+\end_layout
+
+\begin_layout Section
+Implementation Decition
+\end_layout
+
+\begin_layout Subsection
+Scala on Android
+\end_layout
+
+\begin_layout Standard
+Right now using Scala on Android isn't a big pleasure.
+ The toolchain for running Scala on Android is in a early stage and has
+ to be stitched together manually.
+ Scala brings a huge base class library with it, which uses up space.
+ In fact it is so large that the Android byte-code to Dalvik code converter
+ chrashed on it.
+ That means that need to use crutches like Proguard to remove unreferenced
+ library code to shrink the size of the library.
+ Futhermore Scala generates tons of small classes for closures and other
+ language construct which add to the memory load.
+ All in all this results in long compile times, many hours fighting problems
+ which comes with the unmature tools.
+ 
+\end_layout
+
+\begin_layout Standard
+The Akka mobile could easily work without Scala.
+ Basically we could create a very light libary for Android client which
+ can communicate with the Akka actors on the server.
+ That library maybe comes entierly without any Actor related concepts, but
+ rather a simple communication API.
+ It would certainly avoid all the pain involved with running Scala on Android.
+\end_layout
+
+\begin_layout Standard
+Why are we using Scala on Android? The main reason is that the core Akka
+ actor library just brings a rock solid, tested implementation of Actors,
+ which work great for the event/message driven use case scenarious in mind.
+ It also helps for the internal implementation of the communication layer.
+ Reinventing the weel costs a lot of time in which we can work around the
+ Scala issues or implement usefull features.
+ Futhermore we can later add a Java-API, which would let's the Scala issues
+ dissapear and make Akka mobile just another library shipped as jar.
+ For the core Akka actor API allready has a Java-interface, so we only need
+ to add a Java API for the new communcation layer.
+\end_layout
+
+\begin_layout Standard
+While Scala creates a lot of pain, it is not worth to reimplement yet another
+ actor library in Java.
+ This energy is better used to improve the Scala story for Android.
+\end_layout
+
+\begin_layout Subsection
+Reimplementing the Remote Actors Implementation On The Client
+\end_layout
+
+\begin_layout Standard
+In the first approach to the Akka mobile project was to just use the remote
+ Actor implementation as is and add features on top of it.
+ However a few issues bubbled up.
+ The first issue is that implementation is built on Netty.
+ That adds more dependencies which increase the allready large footprint
+ of the basic Akka and Scala library.
+ That issue can be worked around to some extend by stripping out classes
+ with Proguard.
+ When enough classes are stripped away you can get the regular Akka remote
+ actor implemention working on Android.
+ However then the next issue hits: The symmetric implementation of the actor
+ communication, which needs to be changed.
+ That means we would need to implementation.
+ Now a streightford change would basically break compability with the regular
+ remote actor implementation, which is not desirable.
+ Basically because their can be only one remote communcation implementation
+ be active at a time.
+ But we might want to mix those: Using the Akka mobile remote actors to
+ communicate with the devices, using the regular remote actors to commicate
+ with other machines.
+ 
+\end_layout
+
+\begin_layout Standard
+At this point we've decided that we better just reimplement the remote communica
+tion completely.
+ It especially reflects the asymmetry of the plattforms.
+ The client implementation is a simple streight forward Java socket based
+ implementation.
+ This isn't a problem, because the client usually has only one connection
+ open.
+ On the server we have a netty based, high concurrent implementation much
+ like regular remote actors.
+\end_layout
+
+\begin_layout Subsection
+Changing the Wire Protocol
+\end_layout
+
+\begin_layout Standard
+While first the implementation of the server and client where different,
+ they used the same wire protocol.
+ However soon we found out that some information is useless for Akka mobile
+ while other is missing.
+ Most notably is that we need to send client ids around instand of host-names
+ and port numbers.
+ That lead to the first modification.
+ Once the protocol is diffrent, futher changes do not matter anymore.
+ So the wire protocol has been stripped to the minimum for the Akka mobile
+ communication, removing many featueres which are not suppored anyways.
+\end_layout
+
+\begin_layout Section
+Future Work
+\end_layout
+
+\begin_layout Subsection
+Communication Improvments
+\end_layout
+
+\begin_layout Enumerate
+Serialisation / Versioning
+\end_layout
+
+\begin_layout Enumerate
+Batch-Messages
+\end_layout
+
+\begin_layout Enumerate
+HTTP?
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "Paper"
+options "agsm"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

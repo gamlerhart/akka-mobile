@@ -1,45 +1,54 @@
 package info.gamlor.akkamobile
 
-import android.app.Activity
 import android.os.Bundle
-import akka.actor.Actor
-import akka.mobile.android.{ActivityActor, AndroidDevice}
-import android.util.Log
-import akka.util.ReflectiveAccess
+import android.view.View
+import android.view.View.OnClickListener
+import android.widget.{TextView, EditText, Button}
+import android.text.method.ScrollingMovementMethod
+import akka.mobile.android.ActivityActor
+import info.gamlor.playaround.{AddMessageToChat, SendMessageToChat}
+import akka.actor.ActorRef
+import info.gamlor.akkamobile.MyApplication._
+import android.app.Activity
 
 class AkkaDroidApp extends Activity with ActivityActor {
+
+  private var chatServiceActor: ActorRef = null;
+
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main)
 
-    try {
-      val t = ReflectiveAccess.getClassFor[Actor]("akka.mobile.android.LogcatLogger")
-      val actor = Actor.actorOf(t.right.get)
-      Log.i("i", actor.toString)
-    } catch {
-      case e: Throwable => {
-        e.printStackTrace()
+    chatServiceActor = getApplication.remote.actorFor("chat-service")
+    getApplication.remote.requestC2MDRegistration()
+
+
+    findViewById(R.id.chatMsgs).asInstanceOf[TextView].setMovementMethod(new ScrollingMovementMethod())
+
+
+    val sendButton = findViewById(R.id.sendButton).asInstanceOf[Button]
+    sendButton.setOnClickListener(new OnClickListener {
+      def onClick(p1: View) {
+        val inputTextBox: EditText = findViewById(R.id.enterMsgBox).asInstanceOf[EditText]
+        val message = inputTextBox.getText
+        self ! message.toString
+        inputTextBox.setText("")
       }
-    }
-
-    val otherGuy = Actor.actorOf[OtherTestActor].start()
-    otherGuy ! "Start"
+    })
   }
 
   protected def receive = {
-    case "Answer" => {
-      Log.i("Ac", "a")
+    case message: String => {
+      chatServiceActor ! SendMessageToChat(message)
+    }
+    case AddMessageToChat(message) => {
+      val inputTextBox: EditText = findViewById(R.id.enterMsgBox).asInstanceOf[EditText]
+      val chatList = findViewById(R.id.chatMsgs).asInstanceOf[TextView]
+      chatList.append("\n" + message)
+      inputTextBox.setText("")
     }
   }
 }
 
-class OtherTestActor extends Actor {
-
-  protected def receive = {
-    case "Start" => {
-      throw new Exception("Oh Boy")
-    }
-  }
-}
 
