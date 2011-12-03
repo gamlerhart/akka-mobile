@@ -4,8 +4,12 @@ import akka.mobile.server.ClientInfoDatabase
 import akka.mobile.communication.ClientId
 import org.scalaquery.ql.extended.ExtendedTable
 import org.scalaquery.ql.extended.H2Driver.Implicit._
-import org.scalaquery.session.Database
 import org.scalaquery.session.Database.threadLocalSession
+import org.scalaquery.session.{Session, Database}
+import org.scalaquery.ResultSetInvoker
+import org.scalaquery.simple.StaticQuery
+import org.scalaquery.ql.Query
+import org.h2.jdbc.JdbcSQLException
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -28,7 +32,9 @@ class H2Database(databaseUrl: String) extends ClientInfoDatabase {
 
   def init() {
     database withSession {
-      ApiKeys.ddl.create
+      if (tableDoesNotExist()) {
+        ApiKeys.ddl.create
+      }
     }
   }
 
@@ -65,5 +71,18 @@ class H2Database(databaseUrl: String) extends ClientInfoDatabase {
       }
     }
 
+  }
+
+  private def tableDoesNotExist(): Boolean = {
+    try {
+      Query(ApiKeys).firstOption.getOrElse(("", ""))
+      false
+    } catch {
+      case e: JdbcSQLException => {
+        e.printStackTrace()
+        true
+      }
+      case e => throw e
+    }
   }
 }

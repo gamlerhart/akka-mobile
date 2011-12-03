@@ -10,6 +10,7 @@ import android.test.InstrumentationTestCase
 import android.content.{Context, Intent, BroadcastReceiver}
 import akka.mobile.android.{C2MDException, C2MDReceiver}
 import android.util.Base64
+import akka.mobile.communication.ClientId
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -42,7 +43,7 @@ class C2MDReceiverTest extends TestCase {
 
     toTest.onReceive(null, intent)
 
-    client.assertRegistration((m, s) => m == "test-id-42")
+    client.assertRegistration((m) => m == "test-id-42")
   }
 
   def testThrowsOnError() {
@@ -101,7 +102,7 @@ class C2MDReceiverTest extends TestCase {
     extends RemoteClient with InternalOperationsProvider with InternalOperations {
 
     var postedMessage: Option[(Array[Byte], Option[InetSocketAddress])] = None
-    var registrationRequest: Option[(String, InetSocketAddress)] = None
+    var registrationRequest: Option[String] = None
 
     def connectNow(hostname: String, port: Int) {
       notAvailable()
@@ -123,8 +124,8 @@ class C2MDReceiverTest extends TestCase {
     }
 
 
-    def registerDevice(registrationKey: String, server: InetSocketAddress) {
-      registrationRequest = Some((registrationKey, server))
+    def registerDevice(registrationKey: String) {
+      registrationRequest = Some(registrationKey)
     }
 
 
@@ -134,6 +135,11 @@ class C2MDReceiverTest extends TestCase {
     def requestC2MDRegistration() {
       notAvailable()
     }
+
+
+    def closeConnections() {}
+
+    val clientId = ClientId("mock", "mock")
 
     def notAvailable[T](): T = {
       throw new UnsupportedOperationException("Test-Instance")
@@ -148,12 +154,12 @@ class C2MDReceiverTest extends TestCase {
       }
     }
 
-    def assertRegistration(msgAssert: (String, InetSocketAddress) => Boolean) {
+    def assertRegistration(msgAssert: (String) => Boolean) {
       if (registrationRequest.isEmpty) {
         Assert.fail("No registration has been requested =(")
       } else {
         val p = registrationRequest.get
-        Assert.assertTrue(msgAssert(p._1, p._2))
+        Assert.assertTrue(msgAssert(p))
       }
     }
 

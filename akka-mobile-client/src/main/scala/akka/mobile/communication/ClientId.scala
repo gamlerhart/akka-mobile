@@ -10,6 +10,7 @@ package akka.mobile.communication
  * @since 20.10.11
  */
 
+@SerialVersionUID(1)
 case class ClientId(clientId: String, applicationId: String) {
   if (null == clientId) throw new IllegalArgumentException("clientId cannot be null")
   if (null == applicationId) throw new IllegalArgumentException("applicationId cannot be null")

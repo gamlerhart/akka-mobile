@@ -18,8 +18,4 @@ object InternalActors {
   val C2MDRegistration = "StandardActors:C2MDRegistration"
 
 
-  case object ConnectNow
-
-  case class RegisterC2MD(apiKey: String)
-
 }

@@ -47,5 +47,5 @@ class ServerConfiguration(akkaConfig: Configuration) extends SharedConfig(akkaCo
 
   val C2MD_APP_KEY = akkaConfig.getString("akka.mobile.c2md.key")
   val C2MD_URL =
-    akkaConfig.getString("akka.mobile.c2md.service-url", "https://android.clients.google.com/c2dm/send")
+    akkaConfig.getString("akka.mobile.c2md.service-url", "https://android.apis.google.com/c2dm/send")
 }

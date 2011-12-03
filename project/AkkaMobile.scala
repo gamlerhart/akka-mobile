@@ -28,7 +28,7 @@ object MyBuild extends Build {
     id = "akka-mobile-server",
     base = file("./akka-mobile-server"),
     settings = defaultSettings ++ Seq(
-      libraryDependencies ++= Seq(akkaActors, akkaRemoteActors, netty, scalaTest, akkaTestKit, mockito)
+      libraryDependencies ++= Seq(akkaActors, akkaRemoteActors, netty, asyncHttp, scalaTest, akkaTestKit, mockito)
     )
   ) dependsOn (akkamobileClient % "compile->compile;test->test")
 
@@ -68,6 +68,7 @@ object Dependencies {
 
   val scalaTest = "org.scalatest" %% "scalatest" % "1.6.1" % "test"
   val netty = "org.jboss.netty" % "netty" % "3.2.5.Final"
+  val asyncHttp = "com.ning" % "async-http-client" % "1.6.5"
 
   val akkaTestKit = "se.scalablesolutions.akka" % "akka-testkit" % "1.2" % "test"
   val akkaActors = "se.scalablesolutions.akka" % "akka-actor" % "1.2"

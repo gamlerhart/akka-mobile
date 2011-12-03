@@ -38,10 +38,14 @@ class ClientStateSpec extends Spec with ShouldMatchers {
         ctx.server.addListener(waitForConnection.ref)
         val client = ctx.connectAClient(TestConfigs.defaultClient)
         client.asInstanceOf[InternalOperationsProvider]
-          .internalOperationsAccess.registerDevice("key", new InetSocketAddress("localhost", ctx.port))
-        waitForConnection.receiveOne(5.seconds)
+          .internalOperationsAccess.registerDevice("key")
+
+        val connectedMsg = waitForConnection.receiveOne(10.seconds)
+        val c2mdRegistration = waitForConnection.receiveOne(10.seconds)
 
         client.closeConnections()
+
+        val disconnected = waitForConnection.receiveOne(100.seconds)
 
         ctx.server.connectionStateOf(client.clientId) should be(NotConnectedC2MDAvailable)
       })

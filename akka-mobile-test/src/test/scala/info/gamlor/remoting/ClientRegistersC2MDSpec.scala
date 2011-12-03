@@ -28,7 +28,7 @@ class ClientRegistersC2MDSpec extends Spec with ShouldMatchers {
         ctx.server.addListener(listenOnServer.ref);
 
         val internalOperations = client.asInstanceOf[InternalOperationsProvider].internalOperationsAccess
-        internalOperations.registerDevice("c2md-key", ctx.address)
+        internalOperations.registerDevice("c2md-key")
 
         listenOnServer.ignoreMsg({
           case ClientConnected(_) => true
@@ -45,7 +45,7 @@ class ClientRegistersC2MDSpec extends Spec with ShouldMatchers {
 
 
         val internalOperations = client.asInstanceOf[InternalOperationsProvider].internalOperationsAccess
-        internalOperations.registerDevice("c2md-key", ctx.address)
+        internalOperations.registerDevice("c2md-key")
 
         while (client.c2mdRegistrationKey == None) {
           Thread.sleep(100)
@@ -80,7 +80,7 @@ class ClientRegistersC2MDSpec extends Spec with ShouldMatchers {
       when(mockClient.configuration).thenReturn(TestConfigs.defaultClient)
       val process = Actor.actorOf(new C2MDRegisterProcess(device, mockClient)).start()
 
-      process ! C2MDRegisterProcess.RegisterWith("c2md-key", new InetSocketAddress("test.localhost", 42))
+      process ! C2MDRegisterProcess.RegisterWith("c2md-key")
 
       (process ? C2MDRegisterProcess.IsRegisteredRequest).await
 

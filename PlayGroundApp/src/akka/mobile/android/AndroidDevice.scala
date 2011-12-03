@@ -45,7 +45,7 @@ class AndroidDevice(context: Context, appID: String) extends DeviceOperations {
   def registerForC2MD(forEmail: String) {
     val intent = new Intent("com.google.android.c2dm.intent.REGISTER");
     intent.putExtra("app", PendingIntent.getBroadcast(context, 0, new Intent(), 0));
-    intent.putExtra("sender", "youruser@gmail.com");
+    intent.putExtra("sender", forEmail);
     context.startService(intent);
   }
 

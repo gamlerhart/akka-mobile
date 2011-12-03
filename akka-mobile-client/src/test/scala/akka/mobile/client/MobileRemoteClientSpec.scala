@@ -26,6 +26,14 @@ class MobileRemoteClientSpec extends Spec with ShouldMatchers {
 
       receiver.expectMsg("External-Hi")
     }
+    it("get host and port from configuration") {
+
+      val client = MobileRemoteClient.createClient(TestDevice(),
+        configuration = MobileConfiguration.fromResource("configuredTestConfig.conf"));
+      val actor = client.actorFor("service")
+
+      actor should not be (null)
+    }
   }
 
 }

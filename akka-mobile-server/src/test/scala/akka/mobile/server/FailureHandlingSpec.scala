@@ -8,7 +8,6 @@ import org.scalatest.matchers.ShouldMatchers
 import akka.mobile.communication.NetworkFailures._
 import akka.mobile.client.{SocketRepresentation, TCPSocket, MobileRemoteClient}
 import akka.mobile.testutils._
-import org.jboss.netty.channel.group.DefaultChannelGroup
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import org.jboss.netty.channel._

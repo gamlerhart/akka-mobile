@@ -55,6 +55,8 @@ class TCPSocket(addr: InetSocketAddress, connectTimeoutInMillisec: Int = 5000) e
   val out = socket.getOutputStream
   val in = socket.getInputStream
 
-  def close() = socket.close()
+  def close() {
+    socket.close()
+  }
 }
 

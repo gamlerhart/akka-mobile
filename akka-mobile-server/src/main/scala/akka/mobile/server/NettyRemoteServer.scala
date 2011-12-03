@@ -109,11 +109,11 @@ object NettyRemoteServer {
     object C2MDRegistration extends Actor {
       protected def receive = {
         case RegisterMeForC2MD(clientId, googleKey) => {
-          notifyListeners(NewC2MDRegistration(clientId, googleKey))
           self.reply(RegisteringDone(clientId, googleKey))
           database.foreach(d => {
             d.storeKeyFor(clientId, googleKey)
           })
+          notifyListeners(NewC2MDRegistration(clientId, googleKey))
         }
       }
     }
@@ -146,7 +146,7 @@ object NettyRemoteServer {
 
   class ForceConnectActor extends Actor {
     protected def receive = {
-      case InternalActors.ConnectNow => {}
+      case RemoteMessages.ConnectNow => {}
     }
   }
 

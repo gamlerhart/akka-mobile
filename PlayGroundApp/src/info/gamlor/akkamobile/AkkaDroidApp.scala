@@ -7,9 +7,10 @@ import android.widget.{TextView, EditText, Button}
 import android.text.method.ScrollingMovementMethod
 import akka.mobile.android.ActivityActor
 import info.gamlor.playaround.{AddMessageToChat, SendMessageToChat}
-import akka.actor.ActorRef
 import info.gamlor.akkamobile.MyApplication._
 import android.app.Activity
+import akka.actor.{Actor, ActorRef}
+import android.util.Log
 
 class AkkaDroidApp extends Activity with ActivityActor {
 
@@ -21,8 +22,16 @@ class AkkaDroidApp extends Activity with ActivityActor {
     setContentView(R.layout.main)
 
     chatServiceActor = getApplication.remote.actorFor("chat-service")
-    getApplication.remote.requestC2MDRegistration()
+    //getApplication.remote.requestC2MDRegistration()
 
+    //getApplication.remote.connectNow()
+    getApplication.remote.register("notifications", Actor.actorOf(new Actor() {
+      protected def receive = {
+        case s: String => {
+          Log.i("akka-mobile",">>>>>"+s)
+        }
+      }
+    }).start())
 
     findViewById(R.id.chatMsgs).asInstanceOf[TextView].setMovementMethod(new ScrollingMovementMethod())
 

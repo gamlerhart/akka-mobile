@@ -37,7 +37,7 @@ class ServerConfigurationSpec extends Spec with ShouldMatchers {
       emptyInstance.C2MD_APP_KEY should be(None)
     }
     it("C2MD default url") {
-      emptyInstance.C2MD_URL should be("https://android.clients.google.com/c2dm/send")
+      emptyInstance.C2MD_URL should be("https://android.apis.google.com/c2dm/send")
     }
   }
   describe("Configured Configuration") {

@@ -5,7 +5,7 @@ import akka.mobile.client.{InternalOperations, InternalOperationsProvider, Remot
 import java.net.InetSocketAddress
 import java.lang.{String, IllegalStateException}
 import android.os.Message
-import android.util.Base64
+import android.util.{Log, Base64}
 
 
 /**
@@ -29,6 +29,7 @@ trait C2MDReceiver extends BroadcastReceiver {
   val RegistrationKey = "registration_id"
 
   def onReceive(context: Context, intent: Intent) {
+    Log.i("akka-mobile","C2MD-Event handler called with action: "+intent.getAction)
     if (intent.getAction.equals("com.google.android.c2dm.intent.RECEIVE")) {
       dispatchReceive(context, intent)
     } else if (intent.getAction.equals("com.google.android.c2dm.intent.REGISTRATION")) {
@@ -37,8 +38,7 @@ trait C2MDReceiver extends BroadcastReceiver {
   }
 
   def register(context: Context, registrationKey: String) {
-    val server = serverAddress(context)
-    operationsForClient(context).registerDevice(registrationKey, new InetSocketAddress(server.get._1, server.get._2))
+    operationsForClient(context).registerDevice(registrationKey)
   }
 
 
@@ -71,10 +71,10 @@ trait C2MDReceiver extends BroadcastReceiver {
    * The hostname and port of the server of the server the client should answer.
    *
    * The default operation will get the host and ip from the configuration of the given remote client.
-   * If no host / port are configured there will be no sender in the context. 
-   * However for registering a C2MD client you need a server. 
+   * If no host / port are configured there will be no sender in the context.
+   * However for registering a C2MD client you need a server.
    * The default implementation will contact the server also for registration. For that case you can overwrite
-   * the 'register' method. 
+   * the 'register' method.
    *
    */
   def serverAddress(context: Context): Option[(String, Int)] = {

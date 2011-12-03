@@ -18,7 +18,7 @@ object C2MDExperiments extends App {
 
   main()
 
-  def main() {
+  def main() :Int={
     val postDataBuilder = new StringBuilder();
     postDataBuilder.append(PARAM_REGISTRATION_ID).append("=")
       .append("APA91bHdAm456CVzhKyZH-DDaq6zMdr7R5hzuBdvRxJoi7w1L2zNAKMz33mB2PGU9eaUulblFB0Tb1mP2iiS0b4d8gUyvWpWARh_C4HHt0L83v0u7qr-Ni2q8UkIRnxbDTDziFcJf_fLU1Bu8Ms25Cd9V0hj3N8u5A");
@@ -31,7 +31,7 @@ object C2MDExperiments extends App {
 
     // Hit the dm URL.
 
-    val url = new URL("https://android.clients.google.com/c2dm/send");
+    val url = new URL("https://android.apis.google.com/c2dm/send");
     HttpsURLConnection
       .setDefaultHostnameVerifier(new CustomizedHostnameVerifier());
     val conn = url.openConnection().asInstanceOf[HttpsURLConnection];
@@ -42,8 +42,8 @@ object C2MDExperiments extends App {
       "application/x-www-form-urlencoded;charset=UTF-8");
     conn.setRequestProperty("Content-Length",
       Integer.toString(postData.length));
-    conn.setRequestProperty("Authorization", "GoogleLogin auth="
-      + "DQAAAN0AAADLAKYLxj0iftdVUYqEIKQ119HsRDlgo6VDMss2K_koHIln__0t3JbBE-8yhSh8EX4MiWKCLV-chi3XzFDlQR3YE1d_AtPT1Fp3ERLU8VoTEYVvYt97rOL0fRRWYmcKpAiOlYbJNc3AGbHXjDsz6qoTUxnmGs6BF5MFG8KW3HxEoKRSNY5PicHhEdNYikGpLEp-0J28INk-79J53LP870QWo_NeWHBGvXUm751oiBeaUuMY3hIlb4G4wzgCcFjyY2bn89Va1003Y25KHz0RwJJo1-sLP21UthCSVNPRtvuPfg");
+//    conn.setRequestProperty("Authorization", "GoogleLogin auth="
+//      + "DQAAAN0AAADLAKYLxj0iftwzgCcFjyY2bn89Va1003Y25KHz0RwJJo1-sLP21UthCSVNPRtvuPf");
 
     val out = conn.getOutputStream();
     out.write(postData);

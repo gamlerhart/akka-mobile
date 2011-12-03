@@ -2,7 +2,6 @@ package akka.mobile.client
 
 import scala.collection._
 import java.net.InetSocketAddress
-import java.io.IOException
 import akka.actor._
 import akka.config.Supervision._
 import com.eaio.uuid.UUID
@@ -11,6 +10,8 @@ import akka.mobile.communication.NetworkFailures._
 import akka.mobile.communication._
 import akka.util.Duration
 import akka.dispatch.{FutureTimeoutException, CompletableFuture, Dispatchers}
+import java.io.IOException
+import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 
 
 /**
@@ -35,6 +36,7 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
                       config: MobileConfiguration,
                       faultHandling: ActorRef,
                       clientId: ClientId) {
+
   val registry = new Registry()
   val futures: FutureResultHandling = new FutureResultHandling
   private val messangers = scala.collection.mutable.Map[InetSocketAddress, ActorRef]()
@@ -86,6 +88,15 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
     Actor.actorOf(new RemoteMessagingSupervision(address, wireMsgDispatcher)).start()
   }
 
+
+  def closeConnections() {
+    messangers.synchronized {
+      messangers.foreach(i => {
+        i._2 ! CloseConnection
+      })
+    }
+  }
+
   def channelFor(address: InetSocketAddress): ActorRef = {
     messangers.synchronized {
       messangers.getOrElseUpdate(address, newCommunicationActor(address))
@@ -116,15 +127,17 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
             // we are already in the right state
           }
           case PleaseTryToReconnect => {
-            faultHandling ! StartedConnecting(self)
-            unbecome()
-            initializeIOSubsystem()
+            reconnect()
           }
           case msg: SendMessage => {
             faultHandling ! CannotSendDueNoConnection(lastException, msg, self)
           }
           case msg: SendingSucceeded => {
             messages.remove(msg.orignalMessage)
+          }
+          case CloseConnection => {
+            unbecome()
+            closeConnection()
           }
           case msg: CommunicationMessage => {
             // Ignored
@@ -138,6 +151,9 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
       case msg: SendingSucceeded => {
         messages.remove(msg.orignalMessage)
       }
+      case CloseConnection => {
+        closeConnection()
+      }
       case msg: CommunicationMessage => {
         // Ignored
       }
@@ -146,9 +162,37 @@ class RemoteMessaging(socketFactory: InetSocketAddress => SocketRepresentation,
       }
     }
 
+    private def reconnect() {
+      faultHandling ! StartedConnecting(self)
+      unbecome()
+      initializeIOSubsystem()
+    }
+
+    private def closeConnection() {
+      become({
+        case msg: MaximumNumberOfRestartsWithinTimeRangeReached => {
+          // we don't care at this point in time
+          println("wtf")
+        }
+        case PleaseTryToReconnect => {
+          reconnect()
+        }
+        case msg: SendMessage => {
+          faultHandling ! CannotSendDueClosedConnection(new IOException("Connection has been closed"), msg, self)
+        }
+        case msg: SendingSucceeded => {
+          messages.remove(msg.orignalMessage)
+        }
+        case msg: CommunicationMessage => {
+          // Ignored
+        }
+      })
+      supervisor.shutdown()
+    }
+
     def initializeIOSubsystem() {
-      val socketInitialisation = Actor.actorOf(ResourceInitializeActor(
-        () => new RemoteMessageChannel(socketFactory(address))))
+      val socketInitialisation = Actor.actorOf(ResourceInitializeActor[RemoteMessageChannel](
+        () => new RemoteMessageChannel(socketFactory(address)), (c: RemoteMessageChannel) => c.close()))
 
       sendActor = Actor.actorOf(new RemoteMessageSendingActor(socketInitialisation, config.CONNECT_TIMEOUT))
 
@@ -227,41 +271,67 @@ class ReceiveChannelMonitoring(channelProvider: ActorRef,
                                dispatcher: WireMessageDispatcher,
                                ctxInfo: InetSocketAddress,
                                timeout: Duration) extends Actor {
-  self.dispatcher = Dispatchers.newThreadBasedDispatcher(self)
 
-  var channel: Option[RemoteMessageChannel] = None
 
   override def preStart() {
-    channel = None
     self ! "Receive"
   }
+
 
   protected def receive = {
     case "Receive" => {
       try {
-        if (channel.isEmpty) {
-          channel =
-            Some(
-              (channelProvider ? ResourceInitializeActor.GetResource)
-                .await(timeout).resultOrException.get.asInstanceOf[RemoteMessageChannel])
-        }
-        val msg = channel.get.receive()
-        if (msg != null) {
-          if (msg.hasMessage) {
-            dispatcher.dispatchMessage(msg.getMessage, Right(ctxInfo))
-          } else if (msg != msg) {
-            throw new Error("Not yet implemented")
-          }
-          self ! "Receive"
-        }
+        val channel =
+          (channelProvider ? ResourceInitializeActor.GetResource)
+            .await(timeout).resultOrException.get.asInstanceOf[RemoteMessageChannel]
 
+        val receiverThread = new ReceiveThread(channel, self)
+        receiverThread.start()
       } catch {
         case e: IOException => {
-          channel.foreach(_.close())
           throw e
         }
       }
     }
+    case ErrorOccured(ex) => {
+      throw ex
+    }
   }
+
+  case class ErrorOccured(obj: Throwable)
+
+  /**
+   * We cannot let the blocking read operation run in a actor.
+   * Because it's blocking it can block the stopping-process on a crash. That then
+   * prevents closing the socket on another actor. Currently this is the strategy to close
+   * the connection. The resource managine actor just closes the socket and just let the other actors fail.
+   */
+  class ReceiveThread(channel: RemoteMessageChannel,
+                      messageHandler: ActorRef) extends Thread("Network Message Receiver") {
+    override def run() {
+      try {
+        while(!Thread.currentThread().isInterrupted) {
+          val msg = channel.receive()
+          if (msg != null) {
+            if (msg.hasMessage) {
+              dispatcher.dispatchMessage(msg.getMessage, Right(ctxInfo))
+            } else if (msg != msg) {
+              messageHandler ! ErrorOccured(new Error("Not yet implemented"))
+            }
+          }
+        }
+      } catch {
+        case e: IOException => {
+          channel.close()
+          messageHandler ! ErrorOccured(e)
+        }
+        case e: Throwable => {
+          messageHandler ! ErrorOccured(e)
+        }
+      }
+
+    }
+  }
+
 }
 

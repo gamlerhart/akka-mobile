@@ -1,21 +1,17 @@
 package akka.mobile.server
 
-import org.jboss.netty.bootstrap.ClientBootstrap
-import java.util.concurrent.Executors
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
-import org.jboss.netty.handler.ssl.SslHandler
-import javax.net.ssl.SSLContext
-import org.jboss.netty.channel._
 import akka.actor.ActorRef
 import akka.mobile.protocol.MobileProtocol.AkkaMobileProtocol
 import akka.mobile.communication.CommunicationMessages.SendMessage
-import akka.mobile.communication.NetworkFailures.{ConnectionError, CannotSendDueNoConnection}
 import org.jboss.netty.handler.codec.http._
-import akka.event.EventHandler
-import java.lang.IllegalStateException
-import java.net.{URLEncoder, URI, InetSocketAddress}
+import java.net.URLEncoder
 import akka.mobile.communication.ClientId
-import akka.mobile.server.C2MDFailures.{NoC2MDRegistrationForDevice, C2MDServerError, CouldNotConnectToC2MD}
+import akka.mobile.server.C2MDFailures.{NoC2MDRegistrationForDevice, CouldNotConnectToC2MD}
+import java.lang.{Throwable, IllegalStateException}
+import com.ning.http.client._
+import com.ning.http.client.HttpResponseStatus
+import com.ning.http.client.AsyncHandler.STATE
+import java.io.IOException
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -39,19 +35,14 @@ object NoC2MDAvailable extends FallBackPushMessageSender {
 class C2MDSender(config: ServerConfiguration,
                  database: ClientInfoDatabase,
                  errorHandler: ActorRef) extends FallBackPushMessageSender {
-  val bootstrap = new ClientBootstrap(
-    new NioClientSocketChannelFactory(
-      Executors.newCachedThreadPool(),
-      Executors.newCachedThreadPool()));
-  bootstrap.setPipelineFactory(new HttpClientPipelineFactory());
 
-  val authToken = config.C2MD_APP_KEY.getOrElse(throw new IllegalStateException("Need a c2md app key to use the google service"))
-  val uriString = config.C2MD_URL
-  val uri = new URI(config.C2MD_URL)
-  val host = uri.getHost
-  val port = uri.getPort match {
-    case -1 => 443
-    case p => p
+
+  private val authToken = config.C2MD_APP_KEY.getOrElse(throw new IllegalStateException("Need a c2md app key to use the google service"))
+  private val uriString = config.C2MD_URL
+  private val client = {
+    val builder = new AsyncHttpClientConfig.Builder();
+    builder.setMaximumNumberOfRedirects(3)
+    new AsyncHttpClient(builder.build());
   }
 
   def sendRequest(deviceId: ClientId, message: AkkaMobileProtocol,
@@ -78,91 +69,76 @@ class C2MDSender(config: ServerConfiguration,
     }
   }
 
-  def sendRequestToDevice(googleDeviceKey: String, message: AkkaMobileProtocol, sender: Option[ActorRef], connectionHandlingActor: ActorRef) {
-    val future = bootstrap.connect(new InetSocketAddress(host, port));
-
-    future.addListener(new ChannelFutureListener {
-      def operationComplete(future: ChannelFuture) {
-        if (future.isSuccess) {
-          writeMessageToChannel(future.getChannel, googleDeviceKey, message, sender: Option[ActorRef], connectionHandlingActor)
-        } else {
-          errorHandler ! CouldNotConnectToC2MD(future.getCause,
-            SendMessage(message, sender), connectionHandlingActor)
-          future.getChannel.disconnect()
-          future.getChannel.close()
-        }
-      }
-    })
+  def close() {
+    client.close()
   }
 
-  def writeMessageToChannel(channel: Channel, deviceKey: String, message: AkkaMobileProtocol, sender: Option[ActorRef], connectionHandlingActor: ActorRef) {
-    val request = new DefaultHttpRequest(
-      HttpVersion.HTTP_1_1, HttpMethod.GET, uriString);
-    request.setHeader(HttpHeaders.Names.HOST, host);
-    request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-    request.setHeader(HttpHeaders.Names.CONTENT_TYPE,
-      "application/x-www-form-urlencoded;charset=UTF-8");
-    request.setHeader(HttpHeaders.Names.AUTHORIZATION, "GoogleLogin auth="
-      + authToken);
+  private def sendRequestToDevice(googleDeviceKey: String, message: AkkaMobileProtocol, sender: Option[ActorRef], connectionHandlingActor: ActorRef) {
+    val requestBuilder = client.preparePost(uriString)
+      .addHeader(HttpHeaders.Names.CONTENT_TYPE,
+      "application/x-www-form-urlencoded;charset=UTF-8")
+      .addHeader(HttpHeaders.Names.AUTHORIZATION, "GoogleLogin auth="
+      + authToken)
 
     val messageBase64 = javax.xml.bind.DatatypeConverter.printBase64Binary(message.toByteArray)
     val postDataBuilder = new StringBuilder();
     postDataBuilder.append("registration_id").append("=")
-      .append(deviceKey)
-    postDataBuilder.append("&").append("collapse_key").append("=")
-      .append("0");
-    postDataBuilder.append("&").append("data.payload").append("=")
+      .append(googleDeviceKey)
+    postDataBuilder.append("&collapse_key=0")
+    postDataBuilder.append("&data.payload=")
       .append(URLEncoder.encode(messageBase64, "UTF-8"));
 
+    val content = postDataBuilder.toString().getBytes("UTF-8")
+    requestBuilder.setBody(content)
 
-    request.getContent.writeBytes(messageBase64.getBytes("UTF-8"))
 
-    channel.write(request);
+    requestBuilder.addHeader(HttpHeaders.Names.CONTENT_LENGTH, Integer.toString(content.length))
 
-    channel.getCloseFuture.addListener(new ChannelFutureListener {
-      def operationComplete(future: ChannelFuture) {
-        if (!future.isSuccess) {
-          errorHandler ! CouldNotConnectToC2MD(future.getCause,
+    requestBuilder.execute(new AsyncHandler[Unit] {
+      val collectErrorInfo = new StringBuilder
+
+      def onCompleted() {
+        if (!collectErrorInfo.isEmpty) {
+          errorHandler ! CouldNotConnectToC2MD(new C2MDException(collectErrorInfo.toString()),
             SendMessage(message, sender), connectionHandlingActor)
-          future.getChannel.disconnect()
-          future.getChannel.close()
+
         }
       }
+
+
+      def onStatusReceived(responseStatus: HttpResponseStatus) = {
+        if (responseStatus.getStatusCode == 200) {
+          STATE.CONTINUE
+        } else {
+          collectErrorInfo.append("Unexpected status code. CODE=" + responseStatus.getStatusCode + " " + responseStatus.getStatusText)
+          STATE.ABORT
+        }
+      }
+
+      def onBodyPartReceived(bodyPart: HttpResponseBodyPart) = {
+        val asString = new String(bodyPart.getBodyPartBytes,"UTF8")
+        if(asString.contains("Error=")){
+          collectErrorInfo.append(asString)
+          STATE.ABORT
+        } else{
+          STATE.CONTINUE
+        }
+      }
+
+      def onThrowable(t: Throwable) {
+        errorHandler ! CouldNotConnectToC2MD(t,
+          SendMessage(message, sender), connectionHandlingActor)
+
+      }
+
+      def onHeadersReceived(headers: HttpResponseHeaders) =
+        STATE.CONTINUE
     })
   }
 
-  def close() {
-    bootstrap.releaseExternalResources()
-  }
 
-  class HttpClientPipelineFactory extends ChannelPipelineFactory {
-    def getPipeline: ChannelPipeline = {
-      val pipeline = Channels.pipeline()
-      val engine = SSLContext.getDefault.createSSLEngine()
-      pipeline.addLast("ssl", new SslHandler(engine))
-      pipeline.addLast("codec", new HttpClientCodec())
-      // Remove the following line if you don't want automatic content decompression.
-      pipeline.addLast("inflater", new HttpContentDecompressor())
-      // Uncomment the following line if you don't want to handle HttpChunks.
-      //pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
-      pipeline.addLast("handler", new HttpResponseHandler(errorHandler))
-      pipeline;
-    }
-  }
+}
 
-  class HttpResponseHandler(errorHandler: ActorRef) extends SimpleChannelUpstreamHandler {
-    override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-      val response = e.getMessage.asInstanceOf[HttpResponse];
-      if (response.getStatus != HttpResponseStatus.OK) {
-        EventHandler.notify(C2MDServerError("Get a unexpected HTTP-Response: " + response.getStatus, None))
-      }
-    }
-
-
-    override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-      ctx.getChannel.close()
-      EventHandler.notify(C2MDServerError("Unhandled exception in the server", Some(e.getCause)))
-    }
-  }
+class C2MDException(msg : String) extends Exception(msg){
 
 }

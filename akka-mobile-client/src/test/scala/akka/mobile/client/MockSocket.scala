@@ -13,6 +13,7 @@ import java.util.concurrent.CountDownLatch
 class MockSocket() extends SocketRepresentation {
 
   private val hasWrittenSomething = new CountDownLatch(1)
+  private val hasBeenClosed = new CountDownLatch(1)
   val outBuffer = new ByteArrayOutputStream() {
     override def write(b: Int) {
       super.write(b)
@@ -43,11 +44,16 @@ class MockSocket() extends SocketRepresentation {
 
   def close() {
     closed = true
+    hasBeenClosed.countDown()
     outBuffer.close()
   }
 
   def awaitWrite() {
     hasWrittenSomething.await()
+  }
+
+  def awaitClose() {
+    hasBeenClosed.await()
   }
 
   private def throwOnClosed() {

@@ -189,5 +189,46 @@ class FailureHandlingSpec extends Spec with ShouldMatchers {
 
     }
   }
+  describe("Connection") {
+    it("can close connection") {
+      val errorHandler = ignoreConnectionMsgProbe()
+      val socket = new MockSocket()
+      val client = MobileRemoteClient.createClient(TestDevice(),
+        socketFactory = a => socket,
+        errorHandler = errorHandler.ref)
+
+      val remoteActor = client.actorFor("not-existing", "not-existing.localhost", 1337)
+
+      remoteActor ! "Send a Message"
+
+      socket.awaitWrite()
+
+      client.closeConnections()
+      socket.awaitClose()
+
+    }
+
+    it("after closing we get a closed error") {
+      val errorHandler = ignoreConnectionMsgProbe()
+      val socket = new MockSocket()
+      val client = MobileRemoteClient.createClient(TestDevice(),
+        socketFactory = a => socket,
+        errorHandler = errorHandler.ref)
+
+      val remoteActor = client.actorFor("not-existing", "not-existing.localhost", 1337)
+
+      remoteActor ! "Send a Message"
+
+      socket.awaitWrite()
+
+      client.closeConnections()
+      socket.awaitClose()
+
+      remoteActor ! "error"
+
+      val msg = errorHandler.receiveOne(5.seconds)
+      msg.getClass should be(classOf[CannotSendDueClosedConnection])
+    }
+  }
 
 }

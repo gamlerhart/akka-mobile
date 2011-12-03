@@ -10,8 +10,13 @@ package akka.mobile.communication
  */
 object RemoteMessages {
 
+  @SerialVersionUID(1)
   case class RegisterMeForC2MD(id: ClientId, googleClientKey: String)
 
+  @SerialVersionUID(1)
   case class RegisteringDone(id: ClientId, googleClientKey: String)
 
+
+  @SerialVersionUID(1)
+  case class ConnectNow()
 }

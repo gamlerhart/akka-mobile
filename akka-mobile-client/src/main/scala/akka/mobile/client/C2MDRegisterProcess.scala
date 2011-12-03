@@ -23,7 +23,6 @@ class C2MDRegisterProcess(device: DeviceOperations, client: RemoteClient) extend
     self ! "Check-Resume"
     if (client.configuration.C2MD_REGISTRATION_MODE == "AUTO") {
       self ! "Check-Invite"
-
     }
   }
 
@@ -32,9 +31,7 @@ class C2MDRegisterProcess(device: DeviceOperations, client: RemoteClient) extend
       val lastKey = device.getPreference(LastGivenKey, "no-key");
       val currentKey = device.getPreference(RegisteredKey, "no-key");
       if (lastKey != currentKey) {
-        self ! RegisterWith(lastKey,
-          new InetSocketAddress(device.getPreference(HostKey, "no-host.localhost"),
-            device.getPreference(PortKey, -1)))
+        self ! RegisterWith(lastKey)
       }
     }
     case "Check-Invite" => {
@@ -43,14 +40,11 @@ class C2MDRegisterProcess(device: DeviceOperations, client: RemoteClient) extend
         client.requestC2MDRegistration()
       }
     }
-    case RegisterWith(registrationKey, server) => {
-      client.actorFor(InternalActors.C2MDRegistration,
-        server.getHostName, server.getPort) ! RegisterMeForC2MD(device.clientId, registrationKey)
+    case RegisterWith(registrationKey) => {
+      client.actorFor(InternalActors.C2MDRegistration) ! RegisterMeForC2MD(device.clientId, registrationKey)
 
       device.storePreference(wc => {
         wc.put(LastGivenKey, registrationKey)
-        wc.put(HostKey, server.getHostName)
-        wc.put(PortKey, server.getPort)
       })
     }
     case RegisteringDone(id, key) => {
@@ -66,12 +60,12 @@ class C2MDRegisterProcess(device: DeviceOperations, client: RemoteClient) extend
     }
   }
 
-
 }
+
 
 object C2MDRegisterProcess {
 
-  case class RegisterWith(registrationKey: String, server: InetSocketAddress)
+  case class RegisterWith(registrationKey: String)
 
   case object IsRegisteredRequest
 

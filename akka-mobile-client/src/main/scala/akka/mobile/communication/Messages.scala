@@ -57,6 +57,19 @@ case object NetworkFailures {
   }
 
   /**
+   * Is sent when the connection has been closed. Reopen with PleaseTryToReconnect
+   */
+  case class CannotSendDueClosedConnection(override val lastException: Throwable,
+                                           unsentMessage: CommunicationMessages.SendMessage,
+                                           override val connectionManagingActor: ActorRef)
+    extends CommunicationError(lastException, unsentMessage :: Nil, connectionManagingActor) {
+
+    def trySentGetMessage(): Option[Any] = tryGetMessages.head._1
+
+    def trySentGetSender(): Option[ActorRef] = tryGetMessages.head._2
+  }
+
+  /**
    * On the Server this message will be ignored, since it waits passively for connections
    *
    * For restart / reconnect with the remote service. Usually sent after a time-out, an event etc.
@@ -66,12 +79,18 @@ case object NetworkFailures {
   case object PleaseTryToReconnect extends FailureHandlingMessages
 
   /**
+   * Request to close the connection to this server
+   */
+  case object CloseConnection extends FailureHandlingMessages
+
+  /**
    * Is sent by the system when it start to connecting. For example after a PleaseTryToReconnect.
    *
    * On the client: This message is sent when the system starts to build a connection on the server
    * On the server: This message is sent when a client connects.
    */
   case class StartedConnecting(connectionManagingActor: ActorRef) extends FailureHandlingMessages
+
 
   abstract class CommunicationError(val lastException: Throwable,
                                     val unsentMessages: Seq[CommunicationMessages.SendMessage],

@@ -2,9 +2,9 @@ package akka.mobile.client
 
 import akka.actor._
 import java.net.InetSocketAddress
-import akka.mobile.communication.{InternalActors}
-import akka.mobile.protocol.MobileProtocol.MobileMessageProtocol
 import java.lang.{IllegalStateException, String}
+import akka.mobile.communication.{RemoteMessages, InternalActors}
+import akka.mobile.protocol.MobileProtocol.{AkkaMobileProtocol, MobileMessageProtocol}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -52,14 +52,14 @@ with InternalOperationsProvider {
 
   def connectNow(hostname: String = null, port: Int = -1) {
     if (hostname == null || port < 1) {
-      actorFor(InternalActors.ForceConnectActorName) ! InternalActors.ConnectNow
+      actorFor(InternalActors.ForceConnectActorName) ! RemoteMessages.ConnectNow
     } else {
-      actorFor(InternalActors.ForceConnectActorName, hostname, port) ! InternalActors.ConnectNow
+      actorFor(InternalActors.ForceConnectActorName, hostname, port) ! RemoteMessages.ConnectNow
     }
   }
 
   def closeConnections() {
-
+    remoteMessaging.closeConnections()
   }
 
 
@@ -77,11 +77,11 @@ with InternalOperationsProvider {
   }
 
   def actorFor(serviceId: String) = {
-    if (hostnameAndPort.isEmpty) {
+    if (hostnameAndPort.isEmpty && (configuration.HOST.isEmpty || configuration.PORT.isEmpty)) {
       throw new IllegalStateException("""You need to specify the hostname and port when creating the remote support in order to use this method.
        You can do this when creating the client instance or in the configuration""")
     }
-    val (hostname, ip) = hostnameAndPort.get;
+    val (hostname, ip) = hostnameAndPort.getOrElse((configuration.HOST.get, configuration.PORT.get));
     actorFor(serviceId, hostname, ip)
   }
 
@@ -114,11 +114,11 @@ with InternalOperationsProvider {
 
     def postMessage(messageBytes: Array[Byte], server: Option[InetSocketAddress]) {
       remoteMessaging.wireMsgDispatcher.dispatchMessage(
-        MobileMessageProtocol.parseFrom(messageBytes), server.map(s => Right(s)));
+        AkkaMobileProtocol.parseFrom(messageBytes).getMessage, server.map(s => Right(s)));
     }
 
-    def registerDevice(registrationKey: String, server: InetSocketAddress) {
-      c2mdRegistration ! C2MDRegisterProcess.RegisterWith(registrationKey, server)
+    def registerDevice(registrationKey: String) {
+      c2mdRegistration ! C2MDRegisterProcess.RegisterWith(registrationKey)
     }
   }
 
@@ -136,7 +136,7 @@ trait InternalOperations {
 
   def postMessage(messageBytes: Array[Byte], server: Option[InetSocketAddress]): Unit
 
-  def registerDevice(registrationKey: String, server: InetSocketAddress): Unit
+  def registerDevice(registrationKey: String): Unit
 }
 
 

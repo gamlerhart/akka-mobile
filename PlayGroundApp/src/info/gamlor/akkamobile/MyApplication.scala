@@ -14,7 +14,7 @@ class MyApplication extends android.app.Application {
 
   lazy val remote = MobileRemoteClient.createClient(
     AndroidDevice(this),
-    Some(("10.78.74.17", 2552)),
+    None,
     errorHandler = BroadcastTo(Seq(actorOf(new RetryAfterTimeout()).start(), actorOf(new ResendFailedMessages()).start())))
 
   override def onCreate() {

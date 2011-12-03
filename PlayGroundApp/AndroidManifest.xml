@@ -28,6 +28,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
         <receiver android:name=".DispatchToAkka"
                   android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>

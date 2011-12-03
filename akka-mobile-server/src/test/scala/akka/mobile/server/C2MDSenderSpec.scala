@@ -4,9 +4,9 @@ import org.scalatest.Spec
 import org.scalatest.matchers.ShouldMatchers
 import akka.testkit.TestProbe
 import akka.util.duration._
-import akka.mobile.testutils.{TestDevice, BlackholeActor, TestConfigs}
 import akka.mobile.communication.ClientId
 import akka.mobile.server.C2MDFailures.NoC2MDRegistrationForDevice
+import akka.mobile.testutils.{MockSerialisation, TestDevice, BlackholeActor, TestConfigs}
 
 /**
  * @author roman.stoffel@gamlor.info
@@ -14,7 +14,7 @@ import akka.mobile.server.C2MDFailures.NoC2MDRegistrationForDevice
  */
 
 class C2MDSenderSpec extends Spec with ShouldMatchers {
-
+  val theMessage = MockSerialisation.toWireProtocol(MockSerialisation.messageToActor(Left("actor"),None,"hi",None))
   describe("C2MDSender") {
     it("reports error when it cannots connect") {
       val errorHandler = TestProbe()
@@ -23,7 +23,7 @@ class C2MDSenderSpec extends Spec with ShouldMatchers {
       db.storeKeyFor(deviceId, "google-key")
       val c2mdSender = new C2MDSender(TestConfigs.defaultServer, db, errorHandler.ref)
 
-      c2mdSender.sendRequest(deviceId, null, None, BlackholeActor())
+      c2mdSender.sendRequest(deviceId, theMessage, None, BlackholeActor())
 
       val msg = errorHandler.receiveOne(5.seconds)
 
@@ -37,7 +37,7 @@ class C2MDSenderSpec extends Spec with ShouldMatchers {
       val c2mdSender = new C2MDSender(TestConfigs.defaultServer, new InMemoryClientDatabase(), errorHandler.ref)
 
       val clientId = ClientId("cannot find", "me")
-      c2mdSender.sendRequest(clientId, null, None, BlackholeActor())
+      c2mdSender.sendRequest(clientId, theMessage, None, BlackholeActor())
 
       val msg = errorHandler.receiveOne(5.seconds)
 
